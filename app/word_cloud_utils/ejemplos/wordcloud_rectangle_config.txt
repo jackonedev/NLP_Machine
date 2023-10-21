@@ -1,0 +1,10 @@
+{
+    "width": 1800,
+    "height":500,
+    "relative_scaling": 0.2,
+    "max_words": 100,
+    "color_func": (35,76,229),
+    "min_font_size": 14,
+    "mode": "RGBA",
+    "background_color": None
+}

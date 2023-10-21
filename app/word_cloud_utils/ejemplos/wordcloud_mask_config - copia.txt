@@ -1,0 +1,40 @@
+{
+    "mascara": "mascara_argentina.png",
+    "relative_scaling": 0.01,
+    "max_words": 300,
+    "color_func": (35,76,229),
+    "min_font_size": 22,
+    "max_font_size": 100,
+    "mode": "RGBA",
+    "background_color": None,
+    "min_word_length": 5,
+    "prefer_horizontal": 0.77
+}
+
+## foto melco
+{
+    "mascara": "mascara_melco.png",
+    "relative_scaling": 0.05,
+    "max_words": 350,
+    "color_func": (35,76,229),
+    "min_font_size": 4,
+    "max_font_size": 150,
+    "mode": "RGBA",
+    "background_color": None,
+    "min_word_length": 4,
+    "prefer_horizontal": 0.66
+}
+
+### melco rectangulo
+{
+    "mascara": "rectangulo.png",
+    "relative_scaling": 0.12,
+    "max_words": 77,
+    "color_func": (35,76,229),
+    "min_font_size": 14,
+    "max_font_size": 120,
+    "mode": "RGBA",
+    "background_color": None,
+    "min_word_length": 5,
+    "prefer_horizontal": 0.99
+}
