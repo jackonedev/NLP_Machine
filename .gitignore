@@ -4,7 +4,8 @@
 (obsoleto)*
 .backups/
 output/
-
+test_torch_gpu.py
+transcripcion.ipynb
 
 
 # Byte-compiled / optimized / DLL files
