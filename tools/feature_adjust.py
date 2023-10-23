@@ -1,10 +1,11 @@
 import unicodedata
 import spacy
 from tqdm import tqdm
-from feed import data_info
+from tools.feed import data_info
 import pandas as pd
 
 nlp = spacy.load('es_core_news_sm')
+
 
 def eliminar_caracteres_no_imprimibles(input_string: str, conservar_simbolos: bool = False) -> str:
     def eliminar_tildes(content: str) -> str:
@@ -15,7 +16,7 @@ def eliminar_caracteres_no_imprimibles(input_string: str, conservar_simbolos: bo
             elif c == 'ñ' or c == 'Ñ':
                 cleaned_content += c
             # estos son los valores que eliminamos
-            elif not conservar_simbolos and (c in "&'()*+‘<=>[]^`{|}~ýª!?¿¡.,/⁉️:\""): ## linea modificada junto con los parametros de la funcion
+            elif not conservar_simbolos and (c in "&'()*+‘<=>[]^`{|}~ýª!?¿¡.,/⁉️‼:\""): ## linea modificada junto con los parametros de la funcion
                 
                 continue
             else:
