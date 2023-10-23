@@ -21,25 +21,25 @@ from tools.feed import data_info
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+# identificacion de los dispositivos físicos disponibles
 try:
     num_gpus = torch.cuda.device_count()
-    for ix in range(0, num_gpus):
+    for ix in range(num_gpus):
         # select the latest recognized gpu
-        device_id = 'cuda:{}'.format(ix)
+        device_id = f'cuda:{ix}'
         device = torch.device(device_id)
-        print("GPU disponible, otorgada mediante el id: {}".format(device_id))
+        print(f"GPU disponible, otorgada mediante el id: {device_id}")
 
 except:
     print("Esto debería imprimirse si no existen GPUs disponibles")
     
-device = "cpu"
+
 
 ###   ###   ######   ###   ######   ###   ######   ###   ######   ###   ######   ###   ######   ###   ###
 ###   ###   ###                                                                         ###   ###   ###
 ###   ###   ###                         PROGRAMA PRINCIPAL                              ###   ###   ###
 ###   ###   ###                                                                         ###   ###   ###
 ###   ###   ######   ###   ######   ###   ######   ###   ######   ###   ######   ###   ######   ###   ###
-
 
 
 
@@ -55,9 +55,7 @@ def main_df(df:pd.DataFrame, max_workers:int=4) -> pd.DataFrame:
 
     m_datasets = [df.iloc[i_antiguo:i] for i_antiguo, i in zip(range(0, len(content_batch), nx), range(nx, len(content_batch)+nx, nx)) if i != 0]
     m_datasets = [dataset.reset_index(drop=True) for dataset in m_datasets]
-    # # reiniciar indices de cada uno
-    # for i, dataset in enumerate(m_datasets):
-    #     m_datasets[i] = dataset.reset_index(drop=True)
+
 
     print(f"Ejecutando modelo optimizado con {max_workers} hilos...")
     print(f"Modelo - clasificación de sentimientos: {MODEL}")
@@ -85,32 +83,43 @@ def main_df(df:pd.DataFrame, max_workers:int=4) -> pd.DataFrame:
         OUTPUT.append(predicciones)
 
     end_i = time.time()
+
     print("Tiempo de ejecución del modelo: ", end_i - start_i)
-    #TODO:descargar una copia de OUTPUT por cuestiones de seguridad
-    #TODO:
-    #TODO: Se rompió el código con la optimización por GPU
-    #TODO:
-    with open(os.path.join(app_root, "last_OUTPUT.pkl"), "wb") as f:
-        pickle.dump(OUTPUT, f)
-    #TODO:
-    #TODO:
-    #TODO:
-    #TODO:
     print("Ensamble de las predicciones")
-    for i in range(len(OUTPUT)):# sabemos que es 8 porque m muestras de training sets
-        # Ordenamos el output de las predicciones -> están desordenadas por que algunos hilos terminan antes que otros y se desincroniza el orden
-        OUTPUT[i] = {k: v for k, v in sorted(OUTPUT[i].items())}
 
+    for i in range(len(OUTPUT)):
+        # Ordenamos el output de las predicciones
+        OUTPUT[i] = dict(sorted(OUTPUT[i].items()))
+
+        ##TODO:DRY
+        if device == "cpu":
+            resultado = {}
+            for value_list in OUTPUT[i].values():
+                for value_dict in value_list:
+                    for label, score in value_dict.items():
+                        resultado.setdefault(label, []).append(score)
+
+            # Actualizamos objeto output
+            m_datasets[i].loc[:, "sentiment_i"] = pd.DataFrame(resultado).label
+            m_datasets[i].loc[:, "score_sentiment_i"] = pd.DataFrame(resultado).score
+        ##TODO:DRY
+        else:
         # creamos objeto de predicciones en formato columna
-        resultado = {}
-        for value_list in OUTPUT[i].values():
-            for value_dict in value_list:
-                for label, score in value_dict.items():
-                    resultado.setdefault(label, []).append(score)
+            resultado = {}
+            for value_list in OUTPUT[i].values():
+                for value_dict in value_list:
+                    for label, score in value_dict[0].items():
+                        resultado.setdefault(label, []).append(score)
 
-        # Actualizamos objeto output
-        m_datasets[i].loc[:, "sentiment_i"] = pd.DataFrame(resultado).label
-        m_datasets[i].loc[:, "score_sentiment_i"] = pd.DataFrame(resultado).score
+            # Actualizamos objeto output
+            m_datasets[i].loc[:, "sentiment_i"] = pd.DataFrame(resultado).label
+            m_datasets[i].loc[:, "score_sentiment_i"] = pd.DataFrame(resultado).score
+        ##TODO:DRY
+        
+        
+        
+        
+        
         
     results = pd.DataFrame()
     for i in range(max_workers):
@@ -132,14 +141,16 @@ def main_df(df:pd.DataFrame, max_workers:int=4) -> pd.DataFrame:
 
 
 
-
+# no implementada la correccion
 def main_shared_resources(file_name:str=None, max_workers:int=4) -> pd.DataFrame:
     
-    if file_name:
-        df = Main(file_name)
-    else:
-        df = Main()
+    # if file_name:
+    #     df = Main(file_name)
+    # else:
+    #     df = Main()
         
+
+    df = Main(file_name) if file_name else Main()
 
     ## IMPLEMENTACION DEL MODELO
     start_i = time.time()
@@ -157,8 +168,8 @@ def main_shared_resources(file_name:str=None, max_workers:int=4) -> pd.DataFrame
 
     print(f"Ejecutando modelo optimizado con {max_workers} hilos...")
     print(f"Modelo - clasificación de sentimientos: {MODEL}")
-    # model = pipeline("sentiment-analysis", model=MODEL, tokenizer=MODEL, device=device, top_k=None)##TODO TODO TODO TODO: Verificar porque me cambia la estructura de datos del output
-    model = pipeline("sentiment-analysis", model=MODEL, tokenizer=MODEL)
+    model = pipeline("sentiment-analysis", model=MODEL, tokenizer=MODEL, device=device, top_k=None)##TODO TODO TODO TODO: Verificar porque me cambia la estructura de datos del output
+    # model = pipeline("sentiment-analysis", model=MODEL, tokenizer=MODEL)
 
     predicciones = {}
     def predecir(inputs, position):
@@ -182,34 +193,39 @@ def main_shared_resources(file_name:str=None, max_workers:int=4) -> pd.DataFrame
         OUTPUT.append(predicciones)
 
     end_i = time.time()
+    
     print("Tiempo de ejecución del modelo: ", end_i - start_i)
-    
-    #TODO:
-    #TODO:
-    # with open(os.path.join(app_root, "last_OUTPUT.pkl"), "wb") as f:
-    #     pickle.dump(OUTPUT, f)
-    #TODO:
-    #TODO:
-    #TODO:
-    #TODO:
-    
-    
-    
     print("Ensamble de las predicciones")
-    for i in range(len(OUTPUT)):# sabemos que es 8 porque m muestras de training sets
-        # Ordenamos el output de las predicciones -> están desordenadas por que algunos hilos terminan antes que otros y se desincroniza el orden
-        OUTPUT[i] = {k: v for k, v in sorted(OUTPUT[i].items())}
+    
+    for i in range(len(OUTPUT)):
+        
+        # Ordenamos el output de las predicciones
+        OUTPUT[i] = dict(sorted(OUTPUT[i].items()))
+        
+        ##TODO:DRY
+        if device == "cpu":
+            resultado = {}
+            for value_list in OUTPUT[i].values():
+                for value_dict in value_list:
+                    for label, score in value_dict.items():
+                        resultado.setdefault(label, []).append(score)
 
+            # Actualizamos objeto output
+            m_datasets[i].loc[:, "sentiment_i"] = pd.DataFrame(resultado).label
+            m_datasets[i].loc[:, "score_sentiment_i"] = pd.DataFrame(resultado).score
+        ##TODO:DRY
+        else:
         # creamos objeto de predicciones en formato columna
-        resultado = {}
-        for value_list in OUTPUT[i].values():
-            for value_dict in value_list:
-                for label, score in value_dict.items():
-                    resultado.setdefault(label, []).append(score)
+            resultado = {}
+            for value_list in OUTPUT[i].values():
+                for value_dict in value_list:
+                    for label, score in value_dict[0].items():
+                        resultado.setdefault(label, []).append(score)
 
-        # Actualizamos objeto output
-        m_datasets[i].loc[:, "sentiment_i"] = pd.DataFrame(resultado).label
-        m_datasets[i].loc[:, "score_sentiment_i"] = pd.DataFrame(resultado).score
+            # Actualizamos objeto output
+            m_datasets[i].loc[:, "sentiment_i"] = pd.DataFrame(resultado).label
+            m_datasets[i].loc[:, "score_sentiment_i"] = pd.DataFrame(resultado).score
+        ##TODO:DRY
         
     results = pd.DataFrame()
     for i in range(max_workers):
