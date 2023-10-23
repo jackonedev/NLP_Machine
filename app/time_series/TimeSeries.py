@@ -29,12 +29,12 @@ from tools.feed import crear_directorio
   
   
 # if __name__ == "__main__":
-def main():
+def main() -> str:
     import time
     start = time.time()
     from datetime import datetime
 
-    fecha_hoy = datetime.now().strftime("%m_%d")
+    fecha_hoy = datetime.now().strftime("%m-%d")
     
     print("Ejecutando time_series/TimeSeries.py\n")
     
@@ -133,8 +133,10 @@ def main():
     with open(output_name+".pickle", "wb") as file:
         pickle.dump(df, file)
     
-    
-    
-    
     print("programa finalizado de forma exitosa")
+    
+    return output_name+".pickle"    
+    
 
+if __name__ == "__main__":
+    main()
