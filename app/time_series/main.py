@@ -27,11 +27,29 @@ def main(verbose=True):
     
     ## USER INPUT
     file_name = input("> nombre archivo: ")
+    
     if not file_name:
         print("Ejecución interrumpida de forma segura.")
         exit()
+    
 
     nombre, archivo = procesar_file_csv(file_name)
+    
+    if nombre.endswith("_") or nombre.startswith("_"):
+        print("Error en el nombre del archivo.")
+        raise Exception("El nombre del archivo no puede comenzar ni terminar en _")
+    
+    elif "_" in nombre:
+        print("Warning: Se recomienda no usar _ en el nombre del archivo.")
+        print("Se recomienda usar - en su lugar.")
+        print("Continúa la ejecución...")
+        # La razón de la advertencia es que cuando creamos las versiones de shared_resources
+        # el nombre de la versión va a tomar la primera palabra del archivo antes del primer _
+        # entonces, carne_total_precio, queda versionada bajo el nombre carne
+        # eso puede traer conflictos si tenemos dos archivos que comiencen con la misma palabra
+        # por ejemplo, carne_total_precio y carne_total_cantidad
+        # para eso se recomienda usar - en su lugar, carne-total-precio y carne-total-cantidad
+        
     
     ## PROGRAMA PRINCIPAL
     df = feed(archivo)

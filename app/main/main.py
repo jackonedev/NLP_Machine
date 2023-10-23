@@ -9,12 +9,14 @@ try:
     import data_feed
     import data_preparation
     import creacion_features
+    import shared_resources_feed
     # print("Bloque de ejecución local")
 except:
     # print("Bloque de ejecución cuando es importado")
     import app.main.data_feed as data_feed
     import app.main.data_preparation as data_preparation
     import app.main.creacion_features as creacion_features
+    import app.main.shared_resources_feed as shared_resources_feed
 
 import pandas as pd
 from typing import Union
@@ -26,7 +28,10 @@ from typing import Union
 # CENTRO DE DISTRIBUCION DE RECURSOS
 
 def m1_sentiment():
-    pass
+    resources = {
+        "shared_resources_feed": shared_resources_feed,
+    }
+    return resources
 
 def m2_emotions():
     pass
