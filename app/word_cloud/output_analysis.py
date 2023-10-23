@@ -29,7 +29,10 @@ from tools.feed import procesar_file_csv, procesar_file_png
   ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###
 ###  ###  ###  ###  ###  ###  PROGRAMA PRINCIPAL  ###  ###  ###  ###  ###  ###
   ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###
-  
+"""Notas:
+23/10: Se agrego hardcodeo para el color de las lineas de contorno y el color del contorno
+        Lineas entre 325 y 340
+"""  
   
 ## VARIABLES GENERALES
 print("Cargando configuración...")
@@ -161,12 +164,10 @@ if user_input.lower() == "y" or user_input == '':#bucle obligatorio
     
     try:
         wc_params = ast.literal_eval(wc_params)
-        
         wc_params["mascara"] = Path(os.path.join(path_utils, wc_params["mascara"]))
         
-        ##TODO: esquema de validación Pydantic
+        ##Esquema de validación Pydantic
         validation_schema = WordCloudConfig(**wc_params)
-        
         wc_parmams = validation_schema.model_dump()
         
         
@@ -321,10 +322,25 @@ for row in batch_content:
 with open(os.path.join(output_dir,'unique_batch_content.txt'), 'w', encoding="UTF-8") as f:
     f.write("\n".join(list(set(word_cloud.split(" ")))))
 
+
+# fecha: 23/10
+###TODO: HARDCODED | contour_width: float (default=0) | contour_color: color value (default=”black”)
+###TODO: HARDCODED | contour_width: float (default=0) | contour_color: color value (default=”black”)
+
+## Se cambia el mode de RGBA a RGB y se cambia el background color
+# se añaden las lineas de contorno y color del contorno
+
 wordcloud = WordCloud(
     mask=mascara_wordcloud,
     collocations=False,
+    contour_width=1.,
+    contour_color=color_tuple,
     **wc_params)
+###TODO: HARDCODED | contour_width: float (default=0) | contour_color: color value (default=”black”)
+###TODO: HARDCODED | contour_width: float (default=0) | contour_color: color value (default=”black”)
+# fecha: 23/10
+
+
 if not "colormap" in wc_params.keys():
     wordcloud.color_func=color_func
 
@@ -337,6 +353,7 @@ wordcloud.to_file(f"{output_name}.png")
 
 
 # descargar txt con wc_params
+wc_params["color_func"] = color_tuple
 with open(os.path.join(output_dir, f"{output_name}.txt"), 'w', encoding="UTF-8") as f:
     f.write(str(wc_params))
 
