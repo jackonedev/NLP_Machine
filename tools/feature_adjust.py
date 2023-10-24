@@ -11,9 +11,10 @@ def eliminar_caracteres_no_imprimibles(input_string: str, conservar_simbolos: bo
     def eliminar_tildes(content: str) -> str:
         cleaned_content = ''
         for c in content:
+            
             if c in 'áéíóúÁÉÍÓÚáéíóúÁÉÍÓÚó':
                 cleaned_content += unicodedata.normalize('NFD', c)[0]
-            elif c == 'ñ' or c == 'Ñ':
+            elif c in ['ñ', "Ñ"]:
                 cleaned_content += c
             # estos son los valores que eliminamos
             elif not conservar_simbolos and (c in "&'()*+‘<=>[]^`{|}~ýª!?¿¡.,/⁉️‼:\""): ## linea modificada junto con los parametros de la funcion
@@ -52,6 +53,4 @@ def resample_dataset(df, freq):
     df_categorical = df_categorical.resample(freq).agg(lambda x: list(x))
     df_numerical = df_numerical.resample(freq).mean()
     
-    df_resampled = pd.concat([df_categorical, df_numerical], axis=1)
-    
-    return df_resampled
+    return pd.concat([df_categorical, df_numerical], axis=1)
