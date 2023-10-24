@@ -43,6 +43,8 @@ except:
 
 
 
+
+
 def main_df(df:pd.DataFrame, max_workers:int=4) -> pd.DataFrame:
 
     ## IMPLEMENTACION DEL MODELO
@@ -115,10 +117,6 @@ def main_df(df:pd.DataFrame, max_workers:int=4) -> pd.DataFrame:
             m_datasets[i].loc[:, "sentiment_i"] = pd.DataFrame(resultado).label
             m_datasets[i].loc[:, "score_sentiment_i"] = pd.DataFrame(resultado).score
         ##TODO:DRY
-        
-        
-        
-        
         
         
     results = pd.DataFrame()

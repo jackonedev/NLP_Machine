@@ -63,7 +63,7 @@ def wordcloud():
 
 
 
-def tokenizador_i():
+def tokenizadores():
     resources = {
         "main_feed": data_feed.main,
     }
