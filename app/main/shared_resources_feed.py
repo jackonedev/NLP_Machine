@@ -106,7 +106,7 @@ def return_file(file_name:str) -> pd.DataFrame:
     return df
 
 # crear un mensaje informativo para el usuario
-def menu(file_name:str = None):
+def menu(file_name:str = None) -> pd.DataFrame:
     # para que pueda ingresar por medio de un input el archivo que desea
     # luego elije la version que desea (default la ultima version)
     if not file_name:
