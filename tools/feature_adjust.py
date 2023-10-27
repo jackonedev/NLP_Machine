@@ -1,7 +1,6 @@
 import unicodedata
 import spacy
 from tqdm import tqdm
-from tools.feed import data_info
 import pandas as pd
 
 nlp = spacy.load('es_core_news_sm')
@@ -44,13 +43,3 @@ def aplicar_stopwords(contenido: list) -> list:
     return corpus_sample
 
 
-def resample_dataset(df, freq):
-    non_numeric_column = data_info(df).loc[(data_info(df)["dtype"] != float).values].columna.values
-    
-    df_categorical = df[non_numeric_column]
-    df_numerical = df.drop(non_numeric_column, axis=1)
-    
-    df_categorical = df_categorical.resample(freq).agg(lambda x: list(x))
-    df_numerical = df_numerical.resample(freq).mean()
-    
-    return pd.concat([df_categorical, df_numerical], axis=1)
