@@ -177,8 +177,10 @@ default: {}   (presione enter para seleccionar el default)
 seleccionar versión: """
         
         user_input = input(msg.format("\n\t\t - ".join(versiones), default))
+        
         if not user_input:
             user_input = default
+            
         if user_input not in versiones:
             print("Input ingresado es erróneo.")
             print("Ejecución interrumpida de forma segura.")
@@ -198,6 +200,8 @@ seleccionar versión: """
         print("Error al leer el fichero.")
         print("Ejecución interrumpida de forma segura.")
         exit()
+    
+    df.name = file_name#TODO: Existe una funcion para obtener "nombre" y "archivo".
     
     return df
     
