@@ -29,7 +29,7 @@ from tools.feed import crear_directorio
   
   
 # if __name__ == "__main__":
-def main() -> str:
+def main(file_name:str=None) -> str:
     import time
     start = time.time()
     from datetime import datetime
@@ -47,7 +47,12 @@ def main() -> str:
     #TODO:BUG
 
     ## EJECUCION DEL MODULO WORDCLOUD MAIN
-    df, path_output = Main()
+    if file_name is None:
+        df, path_output = Main()
+    else:
+        df, path_output = Main(file_name=file_name)
+    
+    
     nombre = df.name
     ### PROCESAMIENTO TOKEN  ###
     df = df.drop_duplicates(subset=["content"], keep="first")
@@ -139,4 +144,4 @@ def main() -> str:
     
 
 if __name__ == "__main__":
-    main()
+    print(main(file_name="panorama-economico.csv"))

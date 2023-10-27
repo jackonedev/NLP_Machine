@@ -17,7 +17,7 @@ def limpieza_txt(path:str, file: str) -> list:
         lista = [palabra for palabra in lista if palabra != ""]
     return lista
 
-def main(verbose=True):
+def main(file_name:str=None, verbose=True) -> tuple:
     "Ejecución de time_series/main.py"
     print("Ejecutando time_series/main.py\n")
     resoruces = timeseries()
@@ -26,9 +26,10 @@ def main(verbose=True):
     preparation = resoruces["main_preparation"]
     
     ## USER INPUT
-    file_name = input("> nombre archivo: ")
-    
     if not file_name:
+        file_name = input("> nombre archivo: ")
+    
+    if not file_name:#dios
         print("Ejecución interrumpida de forma segura.")
         exit()
     
