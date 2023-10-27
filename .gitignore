@@ -6,7 +6,7 @@
 output/
 test_torch_gpu.py
 transcripcion.ipynb
-
+v310/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
