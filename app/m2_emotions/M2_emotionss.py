@@ -1,3 +1,5 @@
+## ESTE ES PORQUE QUIERO PROBAR DE CORRER UN SCRIPT EN CADA TERMINAL EN FORMA SIMULTANEA
+# UNA ESPECIA DE OPTIMIZACION MULTI-PROCESOS HECHO DE FORMA MANUAL
 import sys, os
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -26,6 +28,10 @@ import numpy, pickle
 
 
 #warning# Rompiendo el diseño de la arquitectura
+# primero: las funciones del app main deben otorgarse por medio del diccionario resources desde el modulo main
+# segundo: las acciones de ingesta de datos y tratamiento se hace desde el modulo main de la app m2_emotions
+# tercero: la app m2_emotions.M2_emotions ejecuta el modulo main de la app m2_emotions
+
 try:
     from app.main.shared_resources_feed import menu
 except:
@@ -42,7 +48,7 @@ def data_stream(samples: Dataset, target:str = 'content'):
 
 
 # classifier function with batching option
-def classify_tweets(model:pipeline, data:pd.DataFrame, target:str = "content", batching:bool = True) -> list:
+def classify_tweets(model:pipeline, data:pd.DataFrame, target:str = "content") -> list:
     """
     Classify tweets based on given targets and labels using a HuggingFace pipeline.
 
@@ -68,10 +74,7 @@ def classify_tweets(model:pipeline, data:pd.DataFrame, target:str = "content", b
             data.columns = [target]
     except AttributeError:
         assert isinstance(data, pd.DataFrame), "data must be a pandas DataFrame"
-    
-    # vamos a trabajar con 8 batches
-    # tamaño de la muestra:
-    m = data.shape[0] // 8
+        
 
 
     # convert to huggingface dataset for batching
@@ -79,13 +82,8 @@ def classify_tweets(model:pipeline, data:pd.DataFrame, target:str = "content", b
 
     # Classify tweets for each target
     res = []
-    if batching:
-        for result in model(data_stream(dataset, target=target), batch_size=m):
-            res.append(result)
-    else:
-        for result in model(data_stream(dataset, target=target)):
-            res.append(result)
-
+    for result in model(data_stream(dataset, target=target)):#), batch_size = 32):
+        res.append(result)
 
     # # recode results to integers
     # for column in tqdm(label_col_names, desc="Re-coding results"):
@@ -102,8 +100,6 @@ def classify_tweets(model:pipeline, data:pd.DataFrame, target:str = "content", b
 
 
 if __name__ == "__main__":
-    
-    import time
 
     MODEL = "02shanky/finetuned-twitter-xlm-roberta-base-emotion"
     tokenizer = AutoTokenizer.from_pretrained(MODEL)
@@ -112,8 +108,6 @@ if __name__ == "__main__":
     pipeline_i = pipeline('text-classification', model=model, tokenizer=tokenizer, device=0, top_k=None)#batch_size=16
 
     df = menu()
-    
-    file_name = df.name
 
     user_input = input("presione N para abortar el proceso, cualquier otra tecla para continuar: ")
     if user_input.lower() == "n":
@@ -121,27 +115,9 @@ if __name__ == "__main__":
         exit()
     
     # define targets to be classified and labels to use
-    start_i = time.time()
-    predictions_no_batching = classify_tweets(pipeline_i, df, target="content", batching=False)
-    end_i = time.time()
     predictions = classify_tweets(pipeline_i, df, target="content")
-    end_ii = time.time()
     
-    print(f"Tiempo de ejecución sin batching: {end_i - start_i}")
-    print(f"Tiempo de ejecución con batching: {end_ii - end_i}")
-    
-    
-    ## MODULO DE GUARDADO DE DATOS
-    #por las dudas
-    # file_name = "".join(file_name.split(".")[0])
-    try:
-        print("guardando datos... en M2_OUTPUT_{}.pickle".format(file_name))
-        with open(f"M2_OUTPUT_{file_name}.pickle", "wb") as file:
-            pickle.dump(predictions, file)
-    except:
-        with open("M2_OUTPUT.pickle", "wb") as file:
-            pickle.dump(predictions, file)
-            print("datos guardados en M2_OUTPUT.pickle")
-    
+    with open("M2_OUTPUT.pickle", "wb") as file:
+        pickle.dump(predictions, file)
         
     print("Proceso finalizado.")

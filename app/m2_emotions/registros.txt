@@ -1,0 +1,14 @@
+19:48 arrancó
+19:51 finalizó
+
+un batch de 1257 filas
+en CPU
+utilizando Dataset de HuggingFace
+
+No sé a que velocidad va, pero no está forzando los recursos del hardware
+
+El Dataset está siendo enviado al modelo, previamente pasando por un Generador de Python (yield).
+
+El generador está enviando un registro por vez, no es que enviamos de a mini-batches.
+
+El proceso no está optimizado por multihilos.
