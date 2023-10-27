@@ -36,7 +36,7 @@ def procesamiento(batch: list) -> list:
 
     
     batch = [eliminacion_tildes(content) for content in batch]
-    batch = [content.lower() for content in batch]
+    batch = [content.lower().strip() for content in batch]
     
     return batch
 
