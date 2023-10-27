@@ -63,9 +63,10 @@ def wordcloud():
 
 
 
-def tokenizadores():
+def tokenizador():
     resources = {
         "main_feed": data_feed.main,
+        "main_preparation": data_preparation.preprocesamiento,
     }
     return resources
 
