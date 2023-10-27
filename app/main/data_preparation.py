@@ -62,7 +62,7 @@ def main(df: pd.DataFrame) -> pd.DataFrame:
     return df
     
 
-def preprocesamiento(df: pd.DataFrame, quitar=True) -> pd.DataFrame:
+def preprocesamiento(df: pd.DataFrame, quitar=True, token_config=False) -> pd.DataFrame:
     """Especializado para Twitter
 Se ocupa de eliminar los retwits, los links, los usuarios y los hashtags
 Crear una columna con los usuarios mencionados
@@ -76,17 +76,19 @@ Crear una columna con los hashtags
         #assert "token" in list(df.columns), "No existe la columna 'token' en el dataframe"
         df["token"] = df["token"].replace("-", None)
     
-    df["content"] = df.content.apply(lambda x: x.lower()) #TODO: no está en la version original
+    if not token_config:
+        df["content"] = df.content.apply(lambda x: x.lower()) #TODO: no está en la version original
     
-    indices_rt = extraer_rt(df["content"])
-    df = df.drop(extraer_rt(df["content"]))
+    
 
     # check: df.loc[df.duplicated()] # vemos que hay registros duplicados que no son retwits
 
     # ELIMINAMOS LOS REGISTROS DUPLICADOS
     # esto es un doble check porque se supone que los retwits son los unicos duplicados
-    df = df.drop_duplicates()
-    df = df.reset_index(drop=True)
+    if not token_config:
+        df = df.drop(extraer_rt(df["content"]))
+        df = df.drop_duplicates()
+        df = df.reset_index(drop=True)
 
 
     # IDENTIFICAMOS LOS INDICES QUE CONTIENEN HTTP Y EXTRAEMOS LA MUESTRA
