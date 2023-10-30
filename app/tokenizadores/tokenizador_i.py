@@ -1,9 +1,5 @@
 
 ## Librerias Nativas de Python y de Terceros
-try: # < python 3.11
-    import tweetnlp
-except ImportError:
-    pass
 import tiktoken
 from tqdm import tqdm
 import pandas as pd
@@ -61,12 +57,6 @@ def tokenizador(batch: list) -> pd.DataFrame:
     except ValueError:
         print (" Length mismatch: Expected axis has 5 elements, new values have 1 elements")
 
-    try:
-        data = Dataset.from_pandas(data)
-        model_ner = tweetnlp.load_model('ner')
-        ii_nombres_propios = model_ner.ner(data_stream(data))
-    except NameError:
-        pass
 
 
     ## EMOJIS  ##
@@ -79,10 +69,6 @@ def tokenizador(batch: list) -> pd.DataFrame:
     ##  CREACION DEL DATAFRAME DE TRABAJO  ##
     df = pd.DataFrame({'content': batch, "emojis": feature_emoji , 'i_nombre_propios': i_nombres_propios})
 
-    try:
-        df.loc[:, "ii_nombres_propios"] = ii_nombres_propios
-    except:
-        pass
 
     # # checkpoint para inspeccionar el dataframe
     # with open("dftk_oct_unt.pickle", "wb") as f:

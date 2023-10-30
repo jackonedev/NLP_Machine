@@ -12,7 +12,7 @@ sys.path.insert(0, project_root)
 
 # Librería Reputación Digital
 from tools.feed import data_info
-from tools.feature_treatment import create_sparse_feature, resample_dataset_c
+from tools.feature_treatment import create_sparse_feature, resample_dataset_s
 
 
 
@@ -81,13 +81,11 @@ f3 = create_sparse_feature(df, "emotions_26_max_label")
 
 fs = pd.concat([f1, f2, f3], axis=1)
 
-fs_min = resample_dataset_c(fs, "15T")
-fs_h = resample_dataset_c(fs, "H")
-fs_d = resample_dataset_c(fs, "D")
+fs_h = resample_dataset_s(fs, "H")
+fs_d = resample_dataset_s(fs, "D")
 
 
-fs_min.T
-
+fs_h.T
 
 
 
