@@ -17,9 +17,10 @@ def limpieza_txt(path:str, file: str) -> list:
         lista = [palabra for palabra in lista if palabra != ""]
     return lista
 
-def main(file_name:str=None, verbose=True) -> tuple:
-    "Ejecución de time_series/main.py"
-    print("Ejecutando time_series/main.py\n")
+def main(file_name:str=None, verbose=False) -> tuple:
+    
+    if verbose:
+        print("Ejecutando time_series/main.py\n")
     resoruces = timeseries()
     feed = resoruces["main_feed"]
     data_process = resoruces["main_data_process"]
@@ -55,7 +56,7 @@ def main(file_name:str=None, verbose=True) -> tuple:
     ## PROGRAMA PRINCIPAL
     df = feed(archivo)
     df = data_process(df)
-    df = preparation(df, quitar=True)
+    df = preparation(df, quitar=True, token_config=True)
     df = df.reset_index(drop=True)
     df.name = nombre
 

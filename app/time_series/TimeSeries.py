@@ -29,22 +29,23 @@ from tools.feed import crear_directorio
   
   
 # if __name__ == "__main__":
-def main(file_name:str=None) -> str:
+def main(file_name:str=None, verbose=False) -> str:
     import time
     start = time.time()
     from datetime import datetime
 
     fecha_hoy = datetime.now().strftime("%m-%d")
     
-    print("Ejecutando time_series/TimeSeries.py\n")
-    
-    ## CARGA DE RECURSOS DESDE APP MAIN MAIN
-    ## VARIABLES GENERALES
-    print("Cargando configuración...")
-    #TODO:BUG
-    # resources = timeseries()
-    # procesamiento_texto = resources["timeserie_procesamiento_texto"]
-    #TODO:BUG
+    if verbose:
+        print("Ejecutando time_series/TimeSeries.py\n")
+
+        ## CARGA DE RECURSOS DESDE APP MAIN MAIN
+        ## VARIABLES GENERALES
+        print("Cargando configuración...")
+        #TODO:BUG
+        # resources = timeseries()
+        # procesamiento_texto = resources["timeserie_procesamiento_texto"]
+        #TODO:BUG
 
     ## EJECUCION DEL MODULO WORDCLOUD MAIN
     if file_name is None:
@@ -138,7 +139,8 @@ def main(file_name:str=None) -> str:
     with open(output_name+".pickle", "wb") as file:
         pickle.dump(df, file)
     
-    print("programa finalizado de forma exitosa")
+    if verbose:
+        print("programa finalizado de forma exitosa")
     
     return output_name+".pickle"    
     
