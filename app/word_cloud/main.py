@@ -17,7 +17,7 @@ def limpieza_txt(path:str, file: str) -> list:
         lista = [palabra for palabra in lista if palabra != ""]
     return lista
 
-def main(verbose=True):
+def main(file_name:str=None, verbose=True):
     "Ejecución de wordcloud/main.py"
     print("Ejecutando wordcloud/main.py\n")
     resoruces = wordcloud()
@@ -26,7 +26,10 @@ def main(verbose=True):
     preparation = resoruces["main_preparation"]
     
     ## USER INPUT
-    file_name = input("> nombre archivo: ")
+    #TODO: implementar parametro de funcion que reemplace input
+    if not file_name:
+        file_name = input("> nombre archivo: ")
+    
     if not file_name:
         print("Ejecución interrumpida de forma segura.")
         exit()
