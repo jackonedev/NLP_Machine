@@ -23,7 +23,7 @@ def data_info(data: pd.DataFrame, sorted=True) -> pd.DataFrame:
     df = df.reset_index(drop=True)
     return df
 
-def procesar_file_csv(file_name):    
+def procesar_file_csv(file_name:str) -> tuple:    
     if file_name.endswith(".csv"):
         nombre = file_name[:-4].replace(" ", "_")
         archivo = file_name
@@ -33,7 +33,7 @@ def procesar_file_csv(file_name):
         
     return nombre.lower(), archivo.lower()
 
-def procesar_file_png(file_name):    
+def procesar_file_png(file_name:str) -> tuple:    
     if file_name.endswith(".png"):
         nombre = file_name[:-4].replace(" ", "_")
         archivo = file_name
