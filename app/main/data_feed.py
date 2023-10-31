@@ -16,7 +16,7 @@ except:
 
 
 
-def main(file_name:str) -> pd.DataFrame:
+def main(file_name:str, verbose:bool = False) -> pd.DataFrame:
 
     ###  PARAMETROS DE EJECUCION  ###
     descargar_datos = True
@@ -74,7 +74,8 @@ def main(file_name:str) -> pd.DataFrame:
     df.columns = columnas
     df = df.reset_index(drop=True)
 
-    print(f"""
+    if verbose:
+        print(f"""
     Resumen de la apertura de .csv:
 
     {feed.data_info(df)}

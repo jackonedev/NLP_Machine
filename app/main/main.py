@@ -43,7 +43,7 @@ def timeseries():
     resources = {
         "main_feed": data_feed.main,
         "main_data_process": data_preparation.main,
-        "main_preparation": data_preparation.preprocesamiento,# no creo que lo vaya a necesitar
+        "main_preparation": data_preparation.preprocesamiento,
         "timeserie_procesamiento_texto": creacion_features.procesamiento_texto_ii
     }
     return resources

@@ -31,16 +31,19 @@ except:
 #####################
 ## DATA PREPROCESS ##
 #####################
-def main(df: pd.DataFrame) -> pd.DataFrame:
+def main(df: pd.DataFrame, verbose=False) -> pd.DataFrame:
 
-# 1. Tratamiento de la columna "content" (comentarios en redes)
-    print("1. Limpieza del content\n")
+    # 1. Tratamiento de la columna "content" (comentarios en redes)
+    if verbose:
+        print("1. Limpieza del content\n")
     
     assert isinstance(df, pd.DataFrame), "El argumento df debe ser un dataframe de pandas"
     assert "content" in list(df.columns), "No existe la columna 'content' en el dataframe"
     
     content = df.content.to_list()
-    print(f"Longitud del batch de contenidos: {len(content)}")
+    
+    if verbose:
+        print(f"Longitud del batch de contenidos: {len(content)}")
 
 
     # 1.1 Limpieza de cada parrafo de cada comentario del content
@@ -62,7 +65,7 @@ def main(df: pd.DataFrame) -> pd.DataFrame:
     return df
     
 
-def preprocesamiento(df: pd.DataFrame, quitar=True, token_config=False) -> pd.DataFrame:
+def preprocesamiento(df: pd.DataFrame, quitar=True, token_config=False, verbose=False) -> pd.DataFrame:
     """Especializado para Twitter
 Se ocupa de eliminar los retwits, los links, los usuarios y los hashtags
 Crear una columna con los usuarios mencionados
@@ -98,7 +101,8 @@ Crear una columna con los hashtags
     if quitar:
         df = eliminar_https(df, "content", indices_http)
         df = df.reset_index(drop=True)
-    print(f"Tamaño de la muestra neta: {df.shape[0]}")
+    if verbose:
+        print(f"Tamaño de la muestra neta: {df.shape[0]}")
 
     # EXTRAER USUARIOS Y HASHES
     user_dict = extraer_usuarios(df["content"])
