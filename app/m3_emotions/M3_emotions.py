@@ -2,7 +2,7 @@ import pandas as pd
 from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification, TextClassificationPipeline
 import torch
 from datasets import Dataset
-
+import time
 
 
 
@@ -64,9 +64,33 @@ def emotions_features(predictions:list) -> pd.DataFrame:
 
   # Crear el DataFrame con las columnas correspondientes
   df = pd.DataFrame(
-    {'emotions_26_labels': label_columns,
-     'emotions_26_scores': score_columns,
-     'emotions_26_max_label': max_label_column}
+     {'emotions_26_max_label': max_label_column,
+     'emotions_26_labels': label_columns,
+     'emotions_26_scores': score_columns
+     }
     )
 
   return df
+
+def main_df(df:pd.DataFrame, verbose:bool = False) -> pd.DataFrame:
+        
+    start = time.time()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    MODEL_NAME = "joeddav/distilbert-base-uncased-go-emotions-student"
+    model_ii = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME)
+    tokenizer_ii = AutoTokenizer.from_pretrained(MODEL_NAME)
+
+    pipeline_ii = TextClassificationPipeline(model=model_ii, tokenizer=tokenizer_ii, device=device, top_k=None)
+
+    predictions = classify_tweets(pipeline_ii, df, target="content")
+    predictions = emotions_features(predictions)
+
+    # df = pd.concat([df, predictions], axis=1)
+
+    end = time.time()
+    if verbose:
+        print(f"tiempo de ejecución: {end - start} segs")
+    
+    return predictions
+
