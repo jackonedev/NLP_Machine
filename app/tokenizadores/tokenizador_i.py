@@ -29,7 +29,7 @@ from tools.extraccion_muestras import nombres_propios
 
 
 
-def tokenizador(batch: list) -> pd.DataFrame:
+def tokenizador(batch: list, verbose=False) -> pd.DataFrame:
     def data_stream(samples: Dataset, target:str = 'content'):
         for i in range(samples.num_rows):
             yield samples[target][i]
@@ -73,7 +73,8 @@ def tokenizador(batch: list) -> pd.DataFrame:
     # # checkpoint para inspeccionar el dataframe
     # with open("dftk_oct_unt.pickle", "wb") as f:
     #     pickle.dump(df, f)
-    print("checkpoint 1: DataFrame previo a la tokenizacion")
+    if verbose:
+        print("checkpoint 1: DataFrame previo a la tokenizacion")
 
 
     ##  TIKTOKEN  ##
@@ -173,8 +174,8 @@ def tokenizador(batch: list) -> pd.DataFrame:
 
 
 
-
-    print("checkpoint 2: tokenizacion finalizada")
+    if verbose:
+        print("checkpoint 2: tokenizacion finalizada")
     # with open("tk_oct_unt.pickle", "wb") as f:
     #     pickle.dump(TOKENS, f)
 
@@ -183,7 +184,9 @@ def tokenizador(batch: list) -> pd.DataFrame:
 
     df = pd.concat([df, token_feature], axis=1)
 
-    print("programa finalizado de forma exitosa")
+
+    if verbose:
+        print("programa finalizado de forma exitosa")
 
     return df
 
@@ -232,7 +235,7 @@ def main(file_name:str=None, verbose = False):
     
     batch = df["content"].tolist()
     
-    dftk = tokenizador(batch)
+    dftk = tokenizador(batch, verbose=verbose)
     
     
     df["content"] = dftk["content"]
