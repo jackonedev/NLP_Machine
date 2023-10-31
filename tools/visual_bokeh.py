@@ -8,6 +8,42 @@ try:
 except:
     from colors import colores
 
+
+
+def fit_data(data: pd.DataFrame, inner_radius:int, outer_radius:int, umbral:float = 1.0) -> pd.DataFrame:
+
+    maxi = outer_radius - inner_radius
+    
+    # filtrar los count == 0
+    data = data.loc[:, data.any().values]
+    porcentajes = ((data.sum() / data.sum().sum() * 100).round(1).astype(str) + "%" ).values
+
+    data = data.T.sum(axis=1).to_frame()
+    # CREACION DE COLUMNAS
+    data.columns = ["count"]
+    data.index.name = "etiqueta"
+    data= data.reset_index()
+    # filtrar los count == 0 
+    data = data[data["count"] > 0]
+
+    
+    data["count_adjusted"] = (maxi * data["count"] / max(data["count"])) + inner_radius
+    
+    
+    data.loc[:, "labels"] = data["etiqueta"].apply(lambda x: x.split("_")[-1].capitalize())
+    
+    data.loc[:, "labels"] = data["labels"] + " " + porcentajes
+    
+    data.loc[:, "colors"] = data["etiqueta"].map(colores)
+    
+    # APLICACION DE FILTRO: el filtro igual a 1.0 no filtra nada
+    data = data[data["count_adjusted"] > inner_radius *umbral]
+
+    return data.reset_index(drop=True)
+    
+
+
+
 def plot_ratios(data: pd.DataFrame, inner_radius:int, outer_radius:int, width:int=600, height:int=600, title:str ="") -> figure:
     """
     Se ingresa dataset tal cual sale de resample_dataset_s()
@@ -15,24 +51,8 @@ def plot_ratios(data: pd.DataFrame, inner_radius:int, outer_radius:int, width:in
     """
 
     ## CREAMOS LA VARIABLE QUE VAMOS A VISUALIZAR:
-    umbral = 1.24
-    maxi = outer_radius - inner_radius
-
-    data = data.T.sum(axis=1).to_frame()
-
-    # CREACION DE COLUMNAS
-    data.columns = ["count"]
-    data= data.reset_index()
-    ## TECNICAMENTE TODOS LOS MODELOS ESTAN NORMALIZADOS AL VALOR DE LA PREDICCION CON MÁS FRECUENCIA
-    ## es decir, existe un solo máximo = outer_radio
-    data["count_adjusted"] = (maxi * data["count"] / max(data["count"])) + inner_radius
-    data.loc[:, "labels"] = data["index"].apply(lambda x: x.split("_")[-1].capitalize())
-    data.loc[:, "colors"] = data["index"].map(colores)
-
-
-    # APLICACION DE FILTRO
-    data = data[data["count_adjusted"] > inner_radius *umbral]
-    data= data.reset_index()
+    #TODO: verificar si la data tiene la estructura correspondiente, sino:
+    # data = fit_data(data, inner_radius, outer_radius)
 
 
 
