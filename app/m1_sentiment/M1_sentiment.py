@@ -60,7 +60,7 @@ def main_df(df:pd.DataFrame, max_workers:int=4) -> pd.DataFrame:
 
 
     print(f"Ejecutando modelo optimizado con {max_workers} hilos...")
-    print(f"Modelo - clasificación de sentimientos: {MODEL}")
+    # print(f"Modelo - clasificación de sentimientos: {MODEL}")
     model = pipeline("sentiment-analysis", model=MODEL, tokenizer=MODEL, device=device, top_k=None)
 
     predicciones = {}
@@ -70,6 +70,7 @@ def main_df(df:pd.DataFrame, max_workers:int=4) -> pd.DataFrame:
             predicciones[position] = output
 
     OUTPUT = []
+    #TODO (!) WARNING (!) Fijate que estás creando un pool por batch y que a cada hilo del pool le haces predecir un solo registro del batch por vez
     for I in range(len(m_examples)):
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = {executor.submit(predecir, *(input_ids, i)): i for i, input_ids in enumerate(m_examples[I])}
@@ -87,7 +88,7 @@ def main_df(df:pd.DataFrame, max_workers:int=4) -> pd.DataFrame:
     end_i = time.time()
 
     print("Tiempo de ejecución del modelo: ", end_i - start_i)
-    print("Ensamble de las predicciones")
+    # print("Ensamble de las predicciones")
 
     for i in range(len(OUTPUT)):
         # Ordenamos el output de las predicciones

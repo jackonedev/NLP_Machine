@@ -165,6 +165,7 @@ def tokenizador(batch: list, verbose=False) -> pd.DataFrame:
 
         ## MODULO ULTIMO TOKEN ## #TODO: analizar si last_token debe actualizar a cero junto con la caché
         if len(cache) > 0:
+            cache.append(last_token)#TODO# VERIFICAR
             tokens_c.append("".join(cache).strip())
         # si es un token compuesto lo guardamos, sinó se pierde    
         # elif len(last_token.strip()) > 0:# la caché es cero y no last_token: el ultimo token es un token compuesto y no se limpia el last_token, por lo tanto el ultimo token del token compuesto se guardaría

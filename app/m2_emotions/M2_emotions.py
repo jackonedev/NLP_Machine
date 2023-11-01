@@ -178,45 +178,47 @@ def main_df(df: pd.DataFrame, verbose:bool=False) -> pd.DataFrame:
 
 if __name__ == "__main__":
     
-    import time
+    file_name = "octubre-untitled.csv"
+    df = pd.read_csv(os.path.join(project_root, file_name))
 
-    MODEL = "02shanky/finetuned-twitter-xlm-roberta-base-emotion"
-    tokenizer = AutoTokenizer.from_pretrained(MODEL)
-    model = AutoModelForSequenceClassification.from_pretrained(MODEL)
+    predictions = main_df(df, verbose=True)
+    # MODEL = "02shanky/finetuned-twitter-xlm-roberta-base-emotion"
+    # tokenizer = AutoTokenizer.from_pretrained(MODEL)
+    # model = AutoModelForSequenceClassification.from_pretrained(MODEL)
 
-    pipeline_i = pipeline('text-classification', model=model, tokenizer=tokenizer, device=0, top_k=None)#batch_size=16
+    # pipeline_i = pipeline('text-classification', model=model, tokenizer=tokenizer, device=0, top_k=None)#batch_size=16
 
-    df = menu()
+    # df = menu()
     
-    file_name = df.name
+    # file_name = df.name
 
-    user_input = input("presione N para abortar el proceso, cualquier otra tecla para continuar: ")
-    if user_input.lower() == "n":
-        print("Ejecución interrumpida de forma segura.")
-        exit()
+    # user_input = input("presione N para abortar el proceso, cualquier otra tecla para continuar: ")
+    # if user_input.lower() == "n":
+    #     print("Ejecución interrumpida de forma segura.")
+    #     exit()
     
-    # define targets to be classified and labels to use
-    start_i = time.time()
-    predictions_no_batching = classify_tweets(pipeline_i, df, target="content", batching=False)
-    end_i = time.time()
-    predictions = classify_tweets(pipeline_i, df, target="content")
-    end_ii = time.time()
+    # # define targets to be classified and labels to use
+    # start_i = time.time()
+    # predictions_no_batching = classify_tweets(pipeline_i, df, target="content", batching=False)
+    # end_i = time.time()
+    # predictions = classify_tweets(pipeline_i, df, target="content")
+    # end_ii = time.time()
     
-    print(f"Tiempo de ejecución sin batching: {end_i - start_i}")
-    print(f"Tiempo de ejecución con batching: {end_ii - end_i}")
+    # print(f"Tiempo de ejecución sin batching: {end_i - start_i}")
+    # print(f"Tiempo de ejecución con batching: {end_ii - end_i}")
     
     
-    ## MODULO DE GUARDADO DE DATOS
-    #por las dudas
-    # file_name = "".join(file_name.split(".")[0])
-    try:
-        print("guardando datos... en M2_OUTPUT_{}.pickle".format(file_name))
-        with open(f"M2_OUTPUT_{file_name}.pickle", "wb") as file:
-            pickle.dump(predictions, file)
-    except:
-        with open("M2_OUTPUT.pickle", "wb") as file:
-            pickle.dump(predictions, file)
-            print("datos guardados en M2_OUTPUT.pickle")
+    # ## MODULO DE GUARDADO DE DATOS
+    # #por las dudas
+    # # file_name = "".join(file_name.split(".")[0])
+    # try:
+    #     print("guardando datos... en M2_OUTPUT_{}.pickle".format(file_name))
+    #     with open(f"M2_OUTPUT_{file_name}.pickle", "wb") as file:
+    #         pickle.dump(predictions, file)
+    # except:
+    #     with open("M2_OUTPUT.pickle", "wb") as file:
+    #         pickle.dump(predictions, file)
+    #         print("datos guardados en M2_OUTPUT.pickle")
     
         
-    print("Proceso finalizado.")
+    print("Proceso finalizado exitosamente.")
