@@ -23,8 +23,8 @@ def main(file_name:str=None, verbose=False) -> tuple:
         print("Ejecutando time_series/main.py\n")
     resources = timeseries()
     feed = resources["main_feed"]
-    data_process = resources["main_data_process"]
-    preparation = resources["main_preparation"]
+    # data_process = resources["main_data_process"]
+    # preparation = resources["main_preparation"]
     
     ## USER INPUT
     if not file_name:
