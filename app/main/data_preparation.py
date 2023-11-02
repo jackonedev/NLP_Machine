@@ -20,7 +20,8 @@ except:
     from tools import feed
     from tools.deteccion_hashtags import extraer_hashtags, eliminar_hashtags
     from tools.deteccion_usuarios import extraer_usuarios, eliminar_menciones
-    from tools.extraer_indices_http import extraer_http, eliminar_https
+    from tools.deteccion_https import identificar_http, remover_http
+    # from tools.extraer_indices_http import extraer_http, eliminar_https
     from tools.extraer_indices_rt import extraer_rt
 
 
@@ -32,7 +33,11 @@ except:
 ## DATA PREPROCESS ##
 #####################
 def main(df: pd.DataFrame, verbose=False) -> pd.DataFrame:
-
+    """Implementado en TimeSeries y WordCloud
+    - Se anula en Time Series
+    - aplicar esto antes del preprocesamiento rompe los links
+    
+    """
     # 1. Tratamiento de la columna "content" (comentarios en redes)
     if verbose:
         print("1. Limpieza del content\n")
@@ -66,10 +71,11 @@ def main(df: pd.DataFrame, verbose=False) -> pd.DataFrame:
     
 
 def preprocesamiento(df: pd.DataFrame, quitar=True, token_config=False, verbose=False) -> pd.DataFrame:
-    """Especializado para Twitter
-Se ocupa de eliminar los retwits, los links, los usuarios y los hashtags
-Crear una columna con los usuarios mencionados
-Crear una columna con los hashtags
+    """
+- Se ocupa de eliminar los retweets, los links, los usuarios y los hashtags
+- Crear una columna con los usuarios mencionados
+- Crear una columna con los hashtags
+- Crear una columna con los links
     """
     # IDENTIFICAMOS LOS INDICES QUE COMIENZAN CON RT y EXTRAEMOS MUESRTA
     assert isinstance(df, pd.DataFrame), "El argumento df debe ser un dataframe de pandas"
@@ -80,11 +86,10 @@ Crear una columna con los hashtags
         df["token"] = df["token"].replace("-", None)
     
     if not token_config:
-        df["content"] = df.content.apply(lambda x: x.lower()) #TODO: no está en la version original
+        # La razón de bloquear esto es por la feature de nombres propios
+        df["content"] = df.content.apply(lambda x: x.lower())
     
     
-
-    # check: df.loc[df.duplicated()] # vemos que hay registros duplicados que no son retwits
 
     # ELIMINAMOS LOS REGISTROS DUPLICADOS
     # esto es un doble check porque se supone que los retwits son los unicos duplicados
@@ -95,32 +100,26 @@ Crear una columna con los hashtags
 
 
     # IDENTIFICAMOS LOS INDICES QUE CONTIENEN HTTP Y EXTRAEMOS LA MUESTRA
-    indices_http = extraer_http(df["content"])
-    muestra_http = df.loc[indices_http]
-
-    if quitar:
-        df = eliminar_https(df, "content", indices_http)
-        df = df.reset_index(drop=True)
-    if verbose:
-        print(f"Tamaño de la muestra neta: {df.shape[0]}")
-
-    # EXTRAER USUARIOS Y HASHES
+    # EXTRAER USUARIOS Y HASHES y LINKS
     user_dict = extraer_usuarios(df["content"])
     hash_dict = extraer_hashtags(df["content"])
+    http_dict = identificar_http(df["content"])
 
-    # Eliminar menciones y hashtags
+    # Eliminar menciones y hashtags y links
     if quitar:
         df["content"] = eliminar_menciones(df["content"], user_dict)
         df["content"] = eliminar_hashtags(df["content"], hash_dict)
+        df["content"] = remover_http(df["content"], http_dict)
 
     # AÑADIR UNA COLUMNA CON LOS USUARIOS DETECTADOS
     user_series = pd.Series(user_dict)
-    df['usuarios_mencionados'] = df.index.map(user_series)
-
     hash_series = pd.Series(hash_dict)
+    http_series = pd.Series(http_dict)
+
+    df['usuarios_mencionados'] = df.index.map(user_series)
     df['hashtags'] = df.index.map(hash_series)
+    df["links"] = df.index.map(http_series)
     
     df["content"] = df.content.apply(lambda x: x.strip())
-    
 
     return df

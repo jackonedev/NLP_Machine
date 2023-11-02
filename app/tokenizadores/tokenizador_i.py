@@ -12,10 +12,11 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..
 app_root = os.path.dirname(__file__) if "__file__" in locals() else os.getcwd()
 sys.path.insert(0, project_root)
 
-
 try:
+    from app.main.main import tokenizador as Resources
     from app.tokenizadores.main import main as Main
 except:
+    from main.main import tokenizador as Resources
     from main import main as Main
 
 from tools.tokenizer import preprocesamiento, procesamiento, extraccion_emoji, creacion_emoji_feature
@@ -37,13 +38,13 @@ def tokenizador(batch: list, verbose=False) -> pd.DataFrame:
     # CONTENT
     # texto = "lloviznando lloviznandoo lloviznandooo lloviznandoooo lloviznandooooo"
     # batch = [texto, "Honnla Maria!", "bastaannaannaaa pedro", "massa vuellvo paiis argentina hijos 🙏 🙏", "🙏🙏🙏"]
-
+    
 
     # PREPROCESSING
     batch = preprocesamiento(batch)
 
+    # EXTRACCION DE MUESTRAS 1
     # NER:extracción de nombres propios
-    # 1
     i_nombres_propios = nombres_propios(batch)
 
     # 2
@@ -55,10 +56,11 @@ def tokenizador(batch: list, verbose=False) -> pd.DataFrame:
         assert isinstance(data, pd.DataFrame), "data must be a pandas DataFrame"
 
     except ValueError:
-        print (" Length mismatch: Expected axis has 5 elements, new values have 1 elements")
+        print ("Length mismatch: Expected axis has 5 elements, new values have 1 elements")
 
 
 
+    # EXTRACCION DE MUESTRAS 2
     ## EMOJIS  ##
     feature_emoji = creacion_emoji_feature(batch)
     batch = extraccion_emoji(batch)
@@ -223,11 +225,30 @@ ETAPAS TOKENIZADOR:
     
 """;
 
-def main(file_name:str=None, verbose = False):
+def main_df(df:pd.DataFrame, verbose=False) -> pd.DataFrame:
+    # el tokenizador se encarga de obtener previa de hastags, links y usuarios mencionados
+    assert "content" in df.columns, "df debe tener una columna content"
+    
+    preparation = Resources()["main_preparation"]    
+    
+    batch = df["content"].tolist()
+    
+    df = preparation(df, quitar=True, token_config=True) # extraccion de features I
+    dftk = tokenizador(batch, verbose=verbose)# extraccion de features II y limpieza de content
+    
+    df["content"] = dftk["content"]
+    dftk = dftk.drop("content", axis=1)
+    features = ["content", "usuarios_mencionados", "hashtags", "links"]# (1)
+    
+    return pd.concat([df[features], dftk], axis=1)
+
+
+def main(file_name:str=None, verbose = False)-> pd.DataFrame:
+    #"No está pensada para hacer agregación por (1), devuelve un modelo personalizado del CSV"
     if verbose:
         print("Ejecutando tokenizadores/tokenizador_i.py\n")
     
-    df = Main(file_name=file_name, verbose=verbose)
+    df = Main(file_name=file_name, verbose=verbose)# el main aplica data_feed
     nombre = df.name
     if verbose:
         print("Saliendo de tokenizadores/main.py\n")
@@ -236,15 +257,15 @@ def main(file_name:str=None, verbose = False):
     
     batch = df["content"].tolist()
     
-    dftk = tokenizador(batch, verbose=verbose)
+    ##TODO: extracción de usuarios mencionados y hashtags y links
     
+    dftk = tokenizador(batch, verbose=verbose)# acá preprocsamiento y procesamiento
     
     df["content"] = dftk["content"]
     dftk = dftk.drop("content", axis=1)
     
     
-    features = ["content", "usuarios_mencionados", "hashtags"]
-    
+    features = ["content", "usuarios_mencionados", "hashtags", "links"]# (1)
     
     return pd.concat([df[features], dftk], axis=1)
     

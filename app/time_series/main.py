@@ -21,10 +21,10 @@ def main(file_name:str=None, verbose=False) -> tuple:
     
     if verbose:
         print("Ejecutando time_series/main.py\n")
-    resoruces = timeseries()
-    feed = resoruces["main_feed"]
-    data_process = resoruces["main_data_process"]
-    preparation = resoruces["main_preparation"]
+    resources = timeseries()
+    feed = resources["main_feed"]
+    data_process = resources["main_data_process"]
+    preparation = resources["main_preparation"]
     
     ## USER INPUT
     if not file_name:
@@ -55,8 +55,8 @@ def main(file_name:str=None, verbose=False) -> tuple:
     
     ## PROGRAMA PRINCIPAL
     df = feed(archivo)
-    df = data_process(df)
     df = preparation(df, quitar=True, token_config=True)
+    df = data_process(df)
     df = df.reset_index(drop=True)
     df.name = nombre
 
