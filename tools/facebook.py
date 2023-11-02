@@ -10,7 +10,7 @@ def clean_facebook_comments(batch: list) -> list:
         comment = comment.split(" ")
         
         # Filtro 2: registros que tienen patrón "# h" excluídos
-        if len(comment)==2 and comment[1] in ['h', "d", "sem", "respuesta", "respuestas"]:
+        if len(comment)==2 and comment[1] in ['h', "min", "d", "sem", "respuesta", "respuestas"]:
             continue
 
 

@@ -18,7 +18,7 @@ def eliminar_menciones(data: pd.Series, menciones: dict) -> pd.Series:
     """Función que elimina los usuarios mencionados de los comentarios."""
     for idx, user in menciones.items():
         for mencion in user:
-            data[idx] = data[idx].replace(mencion, '')
+            data[idx] = data[idx].replace(mencion, '').strip()
 
     return data
 

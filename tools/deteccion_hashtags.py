@@ -19,7 +19,7 @@ def eliminar_hashtags(data: pd.Series, hashtags: dict) -> pd.Series:
     """Función que elimina los hashtags de los comentarios."""
     for idx, hashes in hashtags.items():
         for hashtag in hashes:
-            data[idx] = data[idx].replace(hashtag, '')
+            data[idx] = data[idx].replace(hashtag, '').strip()
 
     return data
 

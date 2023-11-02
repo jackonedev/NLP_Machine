@@ -6,7 +6,7 @@ def nombres_propios(batch: list) -> list:
     result = []
     
     for parrafo in batch:
-        muestras = [palabra for palabra in parrafo.split(" ") if (palabra.istitle() and len(palabra) > 3)]#nombres de 4 letras
+        muestras = [palabra for palabra in parrafo.split(" ") if (palabra.istitle() and len(palabra.strip()) > 3)]#nombres de 4 letras
         result.append(muestras)
     return result
 
