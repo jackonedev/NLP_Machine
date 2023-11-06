@@ -10,89 +10,69 @@ from tools.feed import procesar_file_csv
 
 from app.main import data_feed
 from app.tokenizadores import tokenizador_i
-from app.time_series import TimeSeries
-from app.word_cloud import WordCloud, output_analysis
+from app.word_cloud import WordCloud
+from app.word_cloud.output_analysis import main as Main
 
 
-## 1. Data preparation: Tokenizacion y TimeSeries (convención)
-##      - obtener df directo del csv
-##      - implementar tokenizacion en dftk
-##      - implementar timeseries en dfts
+def main_df(df, raw=False, verbose=False) -> None:
+    "raw: es para indicar si el archivo ya esta tokenizado o no"
 
-
-user_input = 'octubre-untitled.csv'
-# user_input = input("Ingresar nombre de archivo: ")
-if not user_input:
-    print("Sin input, se cierra programa de forma segura")
-    sys.exit(0)
+    nombre = df.name
     
-nombre, archivo = procesar_file_csv(user_input)
-archivo_root = os.path.join(project_root, archivo)
+    nombre, archivo = procesar_file_csv(nombre)
+    
+    if raw:
+        ## ARCHIVO TOKENIZADO
+        dftk = tokenizador_i.main(archivo)
+        dftk.name = nombre
+        print("archivo TK abierto exitosamente")
 
-if not os.path.exists(archivo_root):
-    print("El archivo no existe, se cierra programa de forma segura")
-    sys.exit(0)
+        ## 2. WordClouds - content + tokens
+        dfwc = dftk[['content']]
+        tokens =  dftk.loc[:, 'tokens_i'].to_list()
+        dfwc.loc[:, "token"] = tokens.copy()
+    else:
+        dfwc = df.copy()
 
+    dfwc.name = nombre
+    print("\nCorriendo modulo word_cloud\n")
+    nombre_wc = WordCloud.main_df(dfwc)
+    Main(nombre_wc)
 
-## ARCHIVO ELASTIC SEARCH
-df = data_feed.main(archivo_root)
-df.name = nombre
-print("archivo original abierto exitosamente")
+def main(file_name:str = None, verbose=False) -> None:
 
-## ARCHIVO TIMESERIES
-##TODO: procesamiento light sin perdida de registros
-# dfts_path = TimeSeries.main(archivo)
-# with open(dfts_path, "rb") as file:
-#     dfts = pickle.load(file)
-# dfts.name = nombre
-# print("archivo TS abierto exitosamente")
+    if file_name is None:
+        file_name = input("Ingresar nombre archivo: ")
 
-## ARCHIVO TOKENIZADO
-dftk = tokenizador_i.main(archivo)
-dftk.name = nombre
-print("archivo TK abierto exitosamente")
+    if not file_name:
+        print("Sin nombre de archivo, se cierra programa de forma segura")
+        sys.exit(0)
 
-print(df.shape)
-# print(dfts.shape)
-print(dftk.shape)
+    nombre, archivo = procesar_file_csv(file_name)
+    archivo_root = os.path.join(project_root, archivo)
 
+    if not os.path.exists(archivo_root):
+        print("El archivo no existe, se cierra programa de forma segura")
+        sys.exit(0)
 
+    ## ARCHIVO ELASTIC SEARCH
+    df = data_feed.main(archivo_root)
+    df.name = nombre
+    print("archivo original abierto exitosamente")
 
-
-## 2. WordClouds - content + tokens
-## TODO: decidir
-## TODO: que el tokenizador descargue archivos en shared_resources
-# o que wordcloud pueda recibir dataframes...
-dfwc = dftk[['content']]
-dfwc.loc[:, "token"] = dftk.loc[:, 'tokens_i']
-dfwc.name = nombre
-
-#TODO: 
-
-nombre_wc = WordCloud.main_df(dfwc)
-output_analysis.main(nombre_wc)
-
-
-## APP 2
-## 3. Clasificación por transformers -
-## También se lo aplicamos a dftk
-
-## 4. Plotly: graficos de torta -> de lineas (Series temporales) -> de barras
-## 
-## 5. (Pendiente) Bokeh: graficos radiales en coordenadas polares
+    ## ARCHIVO TOKENIZADO
+    dftk = tokenizador_i.main(archivo)
+    dftk.name = nombre
+    print("archivo TK abierto exitosamente")
 
 
-## APP 3
-## 6. (Pendiente) Word2Vec: Embeddings
-## 
-## 7. (Pendiente) K Means: Clustering
-## 
-## 8. (Pendiente) LDA: Topic Modeling
-## 
-## 9. (Pendiente) NER: Named Entity Recognition
-## 
-## 10. (Pendiente) WordNet: NetworkX
-## 
+    ## 2. WordClouds - content + tokens
+    dfwc = dftk[['content']]
+    tokens =  dftk.loc[:, 'tokens_i'].to_list()
+    dfwc.loc[:, "token"] = tokens
+    
+    print("\nCorriendo modulo word_cloud\n")
+    dfwc.name = nombre
 
-
-
+    nombre_wc = WordCloud.main_df(dfwc)
+    Main(nombre_wc)

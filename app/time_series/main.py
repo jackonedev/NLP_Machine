@@ -55,8 +55,8 @@ def main(file_name:str=None, verbose=False) -> tuple:
     
     ## PROGRAMA PRINCIPAL
     df = feed(archivo)
-    df = preparation(df, quitar=True, token_config=True)
-    df = data_process(df)
+    # df = preparation(df, quitar=True, token_config=True)
+    # df = data_process(df)
     df = df.reset_index(drop=True)
     df.name = nombre
 
@@ -64,9 +64,7 @@ def main(file_name:str=None, verbose=False) -> tuple:
     path_out = os.path.join(project_root , "output")
     path_out = os.path.join(path_out, nombre)
     # path_out = crear_directorio_salida_numerado(path_out, verbose=False)
-    if verbose:
-        print("Directorio de salida:")
-        print(path_out)
+
         
     return df, path_out
     

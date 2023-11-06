@@ -231,9 +231,9 @@ def main_df(df:pd.DataFrame, verbose=False) -> pd.DataFrame:
     
     preparation = Resources()["main_preparation"]    
     
-    batch = df["content"].tolist()
     
     df = preparation(df, quitar=True, token_config=True) # extraccion de features I
+    batch = df["content"].tolist()
     dftk = tokenizador(batch, verbose=verbose)# extraccion de features II y limpieza de content
     
     df["content"] = dftk["content"]
@@ -244,6 +244,8 @@ def main_df(df:pd.DataFrame, verbose=False) -> pd.DataFrame:
 
 
 def main(file_name:str=None, verbose = False)-> pd.DataFrame:
+    ##TODO: Esta función tiene implementada la main_preparation dentro del Main()
+    # esta función podría seres un wrapper de main_df
     #"No está pensada para hacer agregación por (1), devuelve un modelo personalizado del CSV"
     if verbose:
         print("Ejecutando tokenizadores/tokenizador_i.py\n")

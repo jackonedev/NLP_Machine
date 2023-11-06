@@ -29,7 +29,7 @@ from tools.feed import crear_directorio
   
   
 # if __name__ == "__main__":
-def main(file_name:str=None, verbose=False) -> str:
+def main(file_name:str=None, verbose=False, conservar_duplicados=False) -> str:
     import time
     start = time.time()
     from datetime import datetime
@@ -53,11 +53,11 @@ def main(file_name:str=None, verbose=False) -> str:
     else:
         df, path_output = Main(file_name=file_name)
     
-    
     nombre = df.name
-    ### PROCESAMIENTO TOKEN  ###
-    df = df.drop_duplicates(subset=["content"], keep="first")
+    if not conservar_duplicados:
+        df = df.drop_duplicates(subset=["content"], keep="first")
     
+    ### PROCESAMIENTO TOKEN  ###
     if "token" in df.columns:
         token = True
         batch_ = df.token.to_list()
@@ -71,8 +71,9 @@ def main(file_name:str=None, verbose=False) -> str:
     # Para reducir la dimensionalidad del dataset
     # se eliminan todas las columnas finalizadas
     # con la palabra '.keyword'
-    columnas = [columna for columna in df.columns if not columna.endswith(".keyword")]
-    df = df.loc[:, columnas]
+    if not conservar_duplicados:
+        columnas = [columna for columna in df.columns if not columna.endswith(".keyword")]
+        df = df.loc[:, columnas]
     
     ### OBTENCION INDICE DE TIEMPO  ###
     # verificamos la existencia de la columna 'date'
@@ -103,20 +104,7 @@ def main(file_name:str=None, verbose=False) -> str:
     # Obtener la columna de hora como string
     df["time_str"] = serie_datetime.dt.time.astype(str)
 
-    # display(serie_datetime)
-    # display(df[["content","token","datetime","date","time"]])
-    
-    #TODO:BUG
-    ### CREAR LA COLUMNA treated_content  ###
-    # treated_content = procesamiento_texto(df.content.to_list(), lista_eliminar=[])
-    # df["treated_content"] = treated_content
-    # display(df[["content","treated_content"]])
-    #TODO:BUG
-    
-    
-    ### DESCARGAR PROCESAMIENT EN recursos_compartidos  ###
-    ###  IDENTIFICACION DEL ULTIMO WORDCLOUD CREADO  ###
-    # Respecto al formato de nombre identificatorio de cada ejecucion
+    ## GESTION DE DIRECTORIOS DE DESCARGA
     output_dir = shared_resources
     crear_directorio(output_dir, verbose=False)
     
