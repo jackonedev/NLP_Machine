@@ -9,6 +9,8 @@ transcripcion.ipynb
 v310/
 models/
 app/word_cloud_utils/ejemplos
+csvs-junks/
+*.xlsx
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
