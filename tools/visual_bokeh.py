@@ -67,7 +67,7 @@ def plot_ratios(data: pd.DataFrame, inner_radius:int, outer_radius:int, width:in
             x_axis_type=None, y_axis_type=None,
             x_range=(-420, 420), y_range=(-420, 420),
             min_border=0, outline_line_color="white",
-            background_fill_color="lightgrey")
+            background_fill_color="white")
 
 
 
@@ -85,7 +85,7 @@ def plot_ratios(data: pd.DataFrame, inner_radius:int, outer_radius:int, width:in
                     -big_angle+angles, angles, color=data.colors, alpha=1.0, line_width=2)
     p.text(x=xr, y=yr,
         text=data["labels"],
-        text_font_size="8pt",
+        text_font_size="12pt",
         text_align="center", text_baseline="middle")
 
 
