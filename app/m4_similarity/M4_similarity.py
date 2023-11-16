@@ -83,7 +83,7 @@ def main_df(df: pd.DataFrame, topicos:list, max_workers:int=4) -> pd.DataFrame:
         with torch.no_grad():
             output = model(inputs, topicos, multi_label=True)
             predicciones[position] = output
-        print("transformers finalizado")
+        print(f"Transformers Nº {position} finalizado")
 
 
     print("INICIANDO PREDICCIONES")

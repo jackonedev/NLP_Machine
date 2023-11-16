@@ -33,7 +33,10 @@ def filtrado_palabras(data: list, lista_eliminar: list) -> list:
     return final_batch
 
 def procesamiento_texto(batch: list, lista_eliminar: list) -> list:
-    """Procesamiento convencional para comentarios en Twitter"""
+    """Procesamiento (convencional) para comentarios en Twitter
+    Elimina palabras por medio de parámetros y realiza limpieza
+    
+    """
     def tokenize(text):
         tokens = [word for word in text.split(" ")]
         return tokens
@@ -42,9 +45,45 @@ def procesamiento_texto(batch: list, lista_eliminar: list) -> list:
     for comentario in batch:
         if not isinstance(comentario, str):
             continue
+        
         # Verificar que el twit tenga al menos 2 palabras
         comentario = comentario.strip()
+        # si el comentario tiene 2 palabras o menos se descarta
         
+        lista_palabras = comentario.split()
+        
+        
+        # remove digits
+        lista_palabras = [palabra for palabra in lista_palabras if not palabra.isdigit()]
+
+        final_batch.append(" ".join(lista_palabras))
+        
+    ## remove config words
+    if bool(lista_eliminar) != False:
+        final_batch = filtrado_palabras(final_batch, lista_eliminar)
+
+    return final_batch
+
+
+def procesamiento_texto_ORIGINAL(batch: list, lista_eliminar: list) -> list:
+    """
+    Elimina registros durante la limpieza
+
+    Procesamiento (convencional) para comentarios en Twitter
+    Elimina palabras por medio de parámetros y realiza limpieza
+    
+    """
+    def tokenize(text):
+        tokens = [word for word in text.split(" ")]
+        return tokens
+    
+    final_batch = []
+    for comentario in batch:
+        if not isinstance(comentario, str):
+            continue
+        
+        # Verificar que el twit tenga al menos 2 palabras
+        comentario = comentario.strip()
         # si el comentario tiene 2 palabras o menos se descarta
         tokens = tokenize(comentario)
         if len(tokens) <= 2:

@@ -85,7 +85,7 @@ def classify_tweets(model:pipeline, data:pd.DataFrame, target:str = "content", b
         for result in model(data_stream(dataset, target=target), batch_size=m):
             res.append(result)
     else:
-        for result in model(data_stream(dataset, target=target)):
+        for result in model(data_stream(dataset, target=target), padding= True, truncation= True, max_length= 512):
             res.append(result)
 
 

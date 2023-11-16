@@ -17,6 +17,8 @@ try:
 except:
     from main.shared_resources_feed import menu
 
+from tools.messure import cronometro
+
 
 
 # define data streamer
@@ -25,11 +27,8 @@ def data_stream(samples: Dataset, target:str = 'content'):
         yield samples[target][i]
 
 
-
-
 # classifier function with batching option
 def classify_tweets(model:pipeline, data:pd.DataFrame, target:str = "content") -> list:
-
 
     try:
         if isinstance(data, list):
@@ -37,28 +36,18 @@ def classify_tweets(model:pipeline, data:pd.DataFrame, target:str = "content") -
             data.columns = [target]
     except AttributeError:
         assert isinstance(data, pd.DataFrame), "data must be a pandas DataFrame"
-        
-
 
     # convert to huggingface dataset for batching
     dataset = Dataset.from_pandas(data)
 
     # Classify tweets for each target
     res = []
-    for result in model(data_stream(dataset, target=target)):#), batch_size = 32):
-        res.append(result)
-
-    # # recode results to integers
-    # for column in tqdm(label_col_names, desc="Re-coding results"):
-    #     data.loc[:,column] = data[column].replace(to_replace = {'supports':-1, 'opposes':1, 'does not express an opinion about': 0})
-    # # Fill NaN values with zero
-    # data[label_col_names] = data[label_col_names].fillna(0)
-    # # Create columns for liberal and conservative classifications
-    # data[label_columns + '_lib'] = [1 if label <= -1 else 0 for label in data[label_col_names].sum(axis = 1)]
-    # data[label_columns + '_con'] = [1 if label >= 1 else 0 for label in data[label_col_names].sum(axis = 1)]
-    
+    with torch.no_grad():
+        for result in model(data_stream(dataset, target=target), padding= True, truncation= True, max_length= 512):#), batch_size = 32):
+            res.append(result)
 
     return res
+
 
 def predictions_features(predictions:list) -> pd.DataFrame:
     # Crear una lista para almacenar los datos de cada columna
@@ -102,6 +91,7 @@ def predictions_features(predictions:list) -> pd.DataFrame:
     return df
 
 
+@cronometro
 def main_df(df: pd.DataFrame, verbose:bool=False) -> pd.DataFrame:
 
     start = time.time()
@@ -131,27 +121,31 @@ def main_df(df: pd.DataFrame, verbose:bool=False) -> pd.DataFrame:
 
 if __name__ == "__main__":
 
-    file_name = "octubre-untitled.csv"
+    # file_name = "RD_fb-cumplevegano-rocio.csv"## Dataset que tiene problemas
+    file_name = "RD_fb-cumplevegano-rocio.csv"
     df = pd.read_csv(os.path.join(project_root, file_name))
 
-    predictions = main_df(df, verbose=True)
+    # predictions = main_df(df, verbose=True) # FUNCION QUE SE DEBE IMPLEMENTAR CORRECTAMENTE
+
+    df = df.copy()
+    df["content"] = df.content.fillna("ELIMINAR")
 
 
-    # MODEL = "edumunozsala/bertin_base_sentiment_analysis_es"
-    # tokenizer = AutoTokenizer.from_pretrained(MODEL)
-    # model = AutoModelForSequenceClassification.from_pretrained(MODEL)
+    MODEL = "edumunozsala/bertin_base_sentiment_analysis_es"
+    tokenizer = AutoTokenizer.from_pretrained(MODEL)
+    model = AutoModelForSequenceClassification.from_pretrained(MODEL)
 
-    # pipeline_i = pipeline('text-classification', model=model, tokenizer=tokenizer, top_k=None)#batch_size=16
+    pipeline_i = pipeline('text-classification', model=model, tokenizer=tokenizer, padding= True, truncation= True, max_length= 512)#batch_size=16
 
+    ## APERTURA DE DF DE FORMA MANUAL
     # df = menu()
-
     # user_input = input("presione N para abortar el proceso, cualquier otra tecla para continuar: ")
     # if user_input.lower() == "n":
     #     print("Ejecución interrumpida de forma segura.")
     #     exit()
     
-    # # define targets to be classified and labels to use
-    # predictions = classify_tweets(pipeline_i, df, target="content")
+    # define targets to be classified and labels to use
+    predictions = classify_tweets(pipeline_i, df, target="content")
     
     # with open("M2_OUTPUT.pickle", "wb") as file:
     #     pickle.dump(predictions, file)

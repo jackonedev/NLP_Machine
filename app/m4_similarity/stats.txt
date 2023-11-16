@@ -1,0 +1,19 @@
+M4 stats:
+
+
+## 4 Workers: Aprox: 0.55 [seg/dato]  1.8 [dato/seg]-> 3000 datos = 1640 segs = 27 min
+## 4 Workers: Aprox: 0.55 [seg/dato]  1.8 [dato/seg]-> 2592 datos = 1436 segs = 24 min
+# Caso atípico noticias facebook: 
+
+# TODO: obtener métricas para contenido que sea de mayor longitud que los tweets
+# 4W: XX | 1824 datos = 5367 segs = 89 min
+
+## probar con max_workers = 8
+## 8 Workers: Aprox: 0.5 [seg/dato]  1.9 [dato/seg]-> 2592 datos = 1312 segs = 22 min
+## 8 Workers: Aprox: 0.5 [seg/dato]  2 [dato/seg]-> 2592 datos = 1297 segs = 22 min
+## 8 Workers: Aprox: 0.5 [seg/dato]  2 [dato/seg]-> 547 datos = 484 segs
+
+
+Nota:
+
+- El tiempo que tarda está ligado principalmente a la longitud máxima del comentario ingresado

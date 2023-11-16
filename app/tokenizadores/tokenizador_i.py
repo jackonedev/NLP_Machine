@@ -230,8 +230,7 @@ def main_df(df:pd.DataFrame, verbose=False) -> pd.DataFrame:
     assert "content" in df.columns, "df debe tener una columna content"
     
     preparation = Resources()["main_preparation"]    
-    
-    
+        
     df = preparation(df, quitar=True, token_config=True) # extraccion de features I
     batch = df["content"].tolist()
     dftk = tokenizador(batch, verbose=verbose)# extraccion de features II y limpieza de content
@@ -239,6 +238,23 @@ def main_df(df:pd.DataFrame, verbose=False) -> pd.DataFrame:
     df["content"] = dftk["content"]
     dftk = dftk.drop("content", axis=1)
     features = ["content", "usuarios_mencionados", "hashtags", "links"]# (1)
+    
+    return pd.concat([df[features], dftk], axis=1)
+
+
+def main_df_V2(df:pd.DataFrame, verbose=False) -> pd.DataFrame:
+    # el tokenizador se encarga de obtener previa de hastags, links y usuarios mencionados
+    assert "content" in df.columns, "df debe tener una columna content"
+    
+    preparation = Resources()["main_preparation"]    
+        
+    df = preparation(df, quitar=True, token_config=True) # extraccion de features I
+    batch = df["content"].tolist()
+    dftk = tokenizador(batch, verbose=verbose)# extraccion de features II y limpieza de content
+    
+    df["content_cleaned"] = dftk["content"]
+    dftk = dftk.drop("content", axis=1)
+    features = ["content", "content_cleaned", "usuarios_mencionados", "hashtags", "links"]
     
     return pd.concat([df[features], dftk], axis=1)
 

@@ -19,7 +19,7 @@ try:
 except:
     from main.shared_resources_feed import menu
 
-
+from tools.messure import cronometro
 
 # define data streamer
 def data_stream(samples: Dataset, target:str = 'content'):
@@ -46,7 +46,7 @@ def classify_tweets(model:pipeline, data:pd.DataFrame, target:str = "content") -
 
     # Classify tweets for each target
     res = []
-    for result in model(data_stream(dataset, target=target)):#), batch_size = 32):
+    for result in model(data_stream(dataset, target=target), padding= True, truncation= True, max_length= 512):
         res.append(result)
 
     # # recode results to integers
@@ -103,7 +103,7 @@ def predictions_features(predictions:list) -> pd.DataFrame:
 
     return df
 
-
+@cronometro
 def main_df(df: pd.DataFrame, verbose:bool=False) -> pd.DataFrame:
 
     start = time.time()
