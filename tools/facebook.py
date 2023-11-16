@@ -2,10 +2,17 @@ def clean_facebook_comments(batch: list) -> list:
     new_batch = []
     for comment in batch:
         
-        # Filtro 1: registros estandar
-        if comment in ["Me gusta", "Responder", "ver mas","Ver más", "Editado", "Fan destacado", "·"] or comment.isnumeric():
+        
+        # Eliminar registros vacios
+        if list(zip(comment)) in ["", " "]:
+            continue
+        # Eliminar registros trolls
+        if not len(list(zip(comment))) > 3: # cualquier comentario que esté escrito utilizando solo 3 caracteres
             continue
         
+        # Filtro 1: registros estandar
+        if comment in ["Me gusta", "Responder", "ver mas","Ver más", "Editado", "Fan destacado", "·", "empty"] or comment.isnumeric():
+            continue
         
         # Filtro 2: Hora de publicacion
         # ## quitar los comentarios numéricos. Ej: 13 17, 14 00

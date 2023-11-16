@@ -9,7 +9,7 @@ def eliminacion_caracteres_innecesarios(content: str) -> str:
     - Reestructuración de texto para eliminar multiples espacios en blanco
     """
     cleaned_content = ''.join(
-        ' ' if c in "&'()*+‘<=>[]^`{|}~ýª!?¿¡.,/⁉️‼…:\"-“”;" else c
+        ' ' if c in "&'()*+‘<=>[]^·•`{|}~ýª!?¿¡.,/⁉️‼…:\"-“”;«»" else c
         for c in content
     )
     return re.sub("\s+", " ", cleaned_content)

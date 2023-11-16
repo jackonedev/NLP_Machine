@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 def random_color_hex():
     return '#%02x%02x%02x' % (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
-def grafico_torta(df: pd.DataFrame, prediction_index: int, random_colors:bool=False) -> None:
+def grafico_torta(df: pd.DataFrame, prediction_index: int, color_sequence:list=None) -> None:
     ### Variables hardcodeadas
     colors = ["#FFD700", "#FF4500", "#1E90FF", "#FF1493", "#32CD32"]  # Colores personalizados
     labels = ["sentiment_i", "emotions_6_max_label", "emotions_26_max_label"]
@@ -35,8 +35,8 @@ def grafico_torta(df: pd.DataFrame, prediction_index: int, random_colors:bool=Fa
     df.columns = [columna, "porcentaje"]
 
     # colores random
-    if random_colors:
-        colors = [random_color_hex() for _ in range(df.shape[0])]
+    if color_sequence:
+        colors = color_sequence
 
     # Variables para personalizar el estilo del gráfico
     title = title

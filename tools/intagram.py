@@ -3,7 +3,7 @@ def clean_instagram_comments(batch: list) -> list:
     for comment in batch:
         
         # Filtro 1
-        if comment in ["Me gusta", "Responder", "Editado", "Fan destacado", "Ver traducción"] or comment.isnumeric():
+        if comment in ["Me gusta", "Responder", "Editado", "Fan destacado", "Ver traducción", "Ocultar todas las respuestas"] or comment.isnumeric():
             continue
         
         
@@ -25,9 +25,19 @@ def clean_instagram_comments(batch: list) -> list:
         elif len(comment) == 3 and comment[1] in ["respuestas"]:
             continue
 
-        elif len(comment) == 4 and comment[3] in ["gustaResponder"]:
+        elif len(comment) == 3 and comment[0].isnumeric() and " ".join(comment[1:]) in ["Me gusta"]:
+            # caso: "41 Me gusta"
             continue
             
+       
+        elif len(comment) == 4 and comment[3] in ["gustaResponder"]:
+            continue
+        
+        elif len(comment) == 4 and comment[2].isnumeric() and comment[-1] in ["respuestas"]:
+            # caso: "Ver las 4 respuestas"
+            continue
+        
+        
         # Filtro 3: eliminar autores
         # filter_3 = [False if word.istitle() else True for word in comment]
         filter_3 = [not word.istitle() for word in comment]

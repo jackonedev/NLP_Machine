@@ -30,7 +30,7 @@ def fit_data(data: pd.DataFrame, inner_radius:int, outer_radius:int, umbral:floa
     data["count_adjusted"] = (maxi * data["count"] / max(data["count"])) + inner_radius
     
     
-    data.loc[:, "labels"] = data["etiqueta"].apply(lambda x: x.split("_")[-1].capitalize())
+    data.loc[:, "labels"] = data["etiqueta"].apply(lambda x: x.split("_")[-2].capitalize())
     
     data.loc[:, "labels"] = data["labels"] + " " + porcentajes
     
@@ -85,7 +85,7 @@ def plot_ratios(data: pd.DataFrame, inner_radius:int, outer_radius:int, width:in
                     -big_angle+angles, angles, color=data.colors, alpha=1.0, line_width=2)
     p.text(x=xr, y=yr,
         text=data["labels"],
-        text_font_size="12pt",
+        text_font_size="10pt",
         text_align="center", text_baseline="middle")
 
 

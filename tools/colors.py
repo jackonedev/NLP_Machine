@@ -1,9 +1,9 @@
 # CONFIGURACION DE COLORES
 
 colors_sentiment = {
-    "sentiment_i_negative": "#e7664cff",
-	"sentiment_i_neutral": "#2261aa",
-	"sentiment_i_positive": "#54b399ff"
+    "negative_1": "#e7664c",
+	"neutral_1": "#2261aa",
+	"positive_1": "#54b399"
  }
 
 amarillo = "#FFFF00"
@@ -15,12 +15,12 @@ azul = "#0000ff"
 rojo= "#FF0000"
 
 colors_emotions_6 = {
-    "emotions_6_max_label_anger": rojo,
-    "emotions_6_max_label_fear": azul,
-    "emotions_6_max_label_joy":amarillo,
-    "emotions_6_max_label_love":verde,
-    "emotions_6_max_label_sadness": azul,
-    "emotions_6_max_label_surprise":amarillo
+    "anger_2": rojo,
+    "fear_2": azul,
+    "joy_2":amarillo,
+    "love_2":verde,
+    "sadness_2": azul,
+    "surprise_2":amarillo
     }
 
 azul_miedo_desagrado = "#473b9e"
@@ -33,34 +33,34 @@ celeste_calma_aburrimiento = "#80c0ea"
 celeste_apatia_tristeza = "#53b7d9"
 
 colors_emotions_28 = {
-    "emotions_26_max_label_neutral": celeste_calma_aburrimiento,
-    "emotions_26_max_label_approval": amarillo_satisfaccion_valor,
-    "emotions_26_max_label_realization": amarillo_satisfaccion_valor,
-    "emotions_26_max_label_caring": verde_amor_certeza,
-    "emotions_26_max_label_curiosity": rosa_aversion_duda,
-    "emotions_26_max_label_confusion": rosa_aversion_duda,
-    "emotions_26_max_label_disapproval": celeste_apatia_tristeza,
-    "emotions_26_max_label_desire": verde_altivez_deseo,
-    "emotions_26_max_label_annoyance": celeste_calma_aburrimiento,
-    "emotions_26_max_label_gratitude": amarillo_satisfaccion_valor,
-    "emotions_26_max_label_excitement": rojo_tension_entusiasmo,
-    "emotions_26_max_label_pride": verde_altivez_deseo,
-    "emotions_26_max_label_remorse": celeste_apatia_tristeza,
-    "emotions_26_max_label_disappointment": celeste_apatia_tristeza,
-    "emotions_26_max_label_relief": celeste_calma_aburrimiento,
-    "emotions_26_max_label_admiration": verde_altivez_deseo,
-    "emotions_26_max_label_anger": rojo_tension_entusiasmo,
-    "emotions_26_max_label_amusement": amarillo_satisfaccion_valor,
-    "emotions_26_max_label_embarrassment": azul_miedo_desagrado,
-    "emotions_26_max_label_joy": verde_altivez_deseo,
-    "emotions_26_max_label_surprise": rojo_tension_entusiasmo,
-    "emotions_26_max_label_nervousness": rojo_tension_entusiasmo,
-    "emotions_26_max_label_love": verde_amor_certeza,
-    "emotions_26_max_label_sadness": celeste_apatia_tristeza,
-    "emotions_26_max_label_grief": rosa_aversion_duda,
-    "emotions_26_max_label_disgust": azul_miedo_desagrado,
-    "emotions_26_max_label_optimism": verde_altivez_deseo,
-    "emotions_26_max_label_fear": azul_miedo_desagrado}
+    "neutral_3": celeste_calma_aburrimiento,
+    "approval_3": amarillo_satisfaccion_valor,
+    "realization_3": amarillo_satisfaccion_valor,
+    "caring_3": verde_amor_certeza,
+    "curiosity_3": rosa_aversion_duda,
+    "confusion_3": rosa_aversion_duda,
+    "disapproval_3": celeste_apatia_tristeza,
+    "desire_3": verde_altivez_deseo,
+    "annoyance_3": celeste_calma_aburrimiento,
+    "gratitude_3": amarillo_satisfaccion_valor,
+    "excitement_3": rojo_tension_entusiasmo,
+    "pride_3": verde_altivez_deseo,
+    "remorse_3": celeste_apatia_tristeza,
+    "disappointment_3": celeste_apatia_tristeza,
+    "relief_3": celeste_calma_aburrimiento,
+    "admiration_3": verde_altivez_deseo,
+    "anger_3": rojo_tension_entusiasmo,
+    "amusement_3": amarillo_satisfaccion_valor,
+    "embarrassment_3": azul_miedo_desagrado,
+    "joy_3": verde_altivez_deseo,
+    "surprise_3": rojo_tension_entusiasmo,
+    "nervousness_3": rojo_tension_entusiasmo,
+    "love_3": verde_amor_certeza,
+    "sadness_3": celeste_apatia_tristeza,
+    "grief_3": rosa_aversion_duda,
+    "disgust_3": azul_miedo_desagrado,
+    "optimism_3": verde_altivez_deseo,
+    "fear_3": azul_miedo_desagrado}
 
 colores = colors_sentiment | colors_emotions_6 | colors_emotions_28
 

@@ -43,6 +43,18 @@ def procesar_file_png(file_name:str) -> tuple:
         
     return nombre.lower(), archivo.lower()
 
+def procesar_file_pickle(file_name:str) -> tuple:
+    if file_name.endswith(".pkl"):
+        nombre = file_name[:-4].replace(" ", "_")
+        archivo = file_name
+    else:
+        nombre = file_name.replace(" ", "_")
+        archivo = file_name + ".pkl"
+        
+    return nombre.lower(), archivo.lower()
+
+
+
 def leer_csv(path_input: str) -> pd.DataFrame:
     """
     Lee un archivo CSV en la ruta especificada y lo retorna como un objeto DataFrame de Pandas.
