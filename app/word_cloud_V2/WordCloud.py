@@ -68,26 +68,24 @@ def word_filters_load(path:str, verbose:bool=False) -> list:
 
 #OK  
 def word_filtering(df:pd.DataFrame, filter_1:list, filter_2:list) -> pd.DataFrame:
-    assert "content" in df.columns, "df debe tener una columna content"
+    """
+    Función que nos permite aplicar filtros de palabra de forma manual, por medio de archivos .txt en el directorio /word_cloud_config/
+    """
+    assert "content_cleaned" in df.columns, "df debe tener una columna content_cleaned"
     
     ###  PROCESAMIENTO BATCH CONTENT  ###
     name = df.name
     df = df.copy()
     df.name = name
-    batch_content = df.content.to_list()
-    print(f"1) len batch_content: {len(batch_content)}")
+    batch_content = df.content_cleaned.to_list()
     ## primero limpiamos conservando simbolos
     batch_content = [eliminar_caracteres_no_imprimibles(parrafo, conservar_simbolos=True) for parrafo in batch_content]
-    print(f"2) len batch_content: {len(batch_content)}")
     ## eliminamos palabras que comienzan con
     batch_content = remover_palabra(batch_content, filter_1)
-    print(f"3) len batch_content: {len(batch_content)}")
     ## volvemos a limpiar quitando simbolos
     batch_content = [eliminar_caracteres_no_imprimibles(parrafo) for parrafo in batch_content]
-    print(f"4) len batch_content: {len(batch_content)}")
     ## filtramos palabras configuradas
     batch_content = procesamiento_texto(batch_content, filter_2)
-    print(f"5) len batch_content: {len(batch_content)}")
     
     
     df["content_cleaned"] = batch_content
@@ -183,42 +181,15 @@ def stop_words_execution(df:pd.DataFrame, filtros_bool:list=None, max_workers:in
     df["content_wc"] = batch_content
     return df
 
-    
-def new_finale():
-    """
-    Esta funcion ejecuta la libreria wordcloud
-    
-    devuelve la o las figure, y agregaciones implicitas en el dataset
-    
-    para que eso ocurra, se debe incorporar la logica de output_analytics.py
-    
-    Algo muy importante a tener en cuenta es que debe recibir el diccionario de params
-    en vez de buscar el txt correspondiente.
-    Se debe ser cuidadoso con los valores por default que se van a establecer
-    Recudir al esquema de validacion en /schemas/...
-    """
-    pass
-
-# PROVISORIO
-def finale(df, path):
-    """
-    Mete el batch de content y el batch de token dentro de una lista
-    y guarda la lista dentro de un fichero pickle
-    devuelv el path de dicho fichero pickle...
-    """
-
-    ### OUTPUT PARA OUTPUT_ANALYTICS.PY ###
-    output = [df.content_wc.to_list(), df.token_wc.to_list()]
-
-    file_path = os.path.join(path, "wordcloud_batch.pickle")
-
-    with open(file_path, "wb") as file:
-        pickle.dump(output, file)
-    
-    return file_path
 
 
-def main_df(df:pd.DataFrame, filtros=None, max_workers=4) -> str:   
+##############################################################################
+##############################################################################
+##############                PROGRAMA PRINCIPAL                ##############
+##############################################################################
+##############################################################################
+
+def main_df(df:pd.DataFrame, filtros=None, max_workers=4) -> pd.DataFrame:# La próxima actualización es List[pd.DataFrame]
     """
     PROCESOS:
     
@@ -229,13 +200,6 @@ def main_df(df:pd.DataFrame, filtros=None, max_workers=4) -> str:
     - 2do: procesamiento de los tokens existentes -> token_wc
     - 3ro: filtrado de palabras -> content_cleaned
     - 4to: implementar stop_words -> content_wc
-    
-    
-    Agregacion pendiente: el array vectorial con el que fue conformado el wordcloud
-    # array_wc = wordcloud.to_array()
-    # pd.Series(array_wc.flatten())
-    # # pd.Series(array_wc.flatten()).value_counts()
-    
     """
     load_resources()
 
@@ -258,15 +222,53 @@ def main_df(df:pd.DataFrame, filtros=None, max_workers=4) -> str:
 
     df = stop_words_execution(df)#, filtros, max_workers)
 
-
-    # hacer algo con new_coso_III
     # Esto no va a correr ni en remil pedo
-    file_path = finale(df, path_utils)#warning: se va a sobrecargar de archivos la carpeta de cofiguracion
+    # file_path = finale(df, path_utils)#warning: se va a sobrecargar de archivos la carpeta de cofiguracion
+
     
     # hacer algo con result
-    print(file_path)
+    # print(file_path)
     print("Programa ejecutado exitosamente")
     # return #Datasets con los stop_words aplicados
-    return df
+    return df# Debería devolver una lista con dataframes. Sea de longitud 1 para procesamiento lineal o multiples elementos para optimizacion por multihilos en la seccion de stop_words.
 
 
+def new_finale(df): #TENER SIEMPRE PRESENTE QUE SE VA A ACTUALIZAR A List[pd.DataFrame]
+    """
+    Esta funcion ejecuta la libreria wordcloud
+    
+    devuelve la o las figure, y agregaciones implicitas en el dataset
+    
+    para que eso ocurra, se debe incorporar la logica de output_analytics.py
+    
+    Algo muy importante a tener en cuenta es que debe recibir el diccionario de params
+    en vez de buscar el txt correspondiente.
+    Se debe ser cuidadoso con los valores por default que se van a establecer
+    Recudir al esquema de validacion en /schemas/...
+    
+    Agregacion pendiente: el array vectorial con el que fue conformado el wordcloud
+    # array_wc = wordcloud.to_array()
+    # pd.Series(array_wc.flatten())
+    # # pd.Series(array_wc.flatten()).value_counts()
+    
+    """
+    dataset = [df]
+    
+
+# PROVISORIO
+def finale(df, path):
+    """
+    Mete el batch de content y el batch de token dentro de una lista
+    y guarda la lista dentro de un fichero pickle
+    devuelve el path de dicho fichero pickle.
+    """
+
+    ### OUTPUT PARA OUTPUT_ANALYTICS.PY ###
+    output = [df.content_wc.to_list(), df.token_wc.to_list()]
+
+    file_path = os.path.join(path, "wordcloud_batch.pickle")
+
+    with open(file_path, "wb") as file:
+        pickle.dump(output, file)
+    
+    return file_path

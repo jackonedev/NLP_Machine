@@ -1,10 +1,12 @@
 ## Librerias Nativas de Python y de Terceros
-import sys, os, time, pickle, ast
+import sys, os, time, ast
 from pathlib import Path
 from wordcloud import WordCloud
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
+import pandas as pd
+from typing import List
 
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -27,30 +29,76 @@ from tools.feed import procesar_file_csv, procesar_file_png
 
 
   
-  
-  
-def main(file_path:str = None, verbose=False) -> None:
+def load_resources():
+    global remover_palabra, filtrado_palabras
+    global content_wc, token_wc
+
+    resources = wordcloud()
+    remover_palabra = resources["wordcloud_remover_palabra"]
+    filtrado_palabras = resources["wordcloud_filtrado_palabras"]
+    
+    content_wc = [
+        "aclaro vote bullrich decime milei fascista",
+        "vote bullrich pedo voto corrupto verbal milei",
+        "bullrich señalada alutara asoc legt usuarios armas fuego desarmista peligro l militaron campaña milei piparo cambiemos gestion pesima anmac seguiran apoyando lla",
+        "valores ucr",
+        "patricia bullrich apoyara javier milei balotaje diferencia socios juntos cambio",
+        "mano macri miley bullrich aseguro vos salvas cuidado libertad proponen libertad llenarse guita seria 2da fuga macri olvides pagando entraria represion",
+        "bullrich respaldara milei balotaje definira encuentro anoche candidato libertario macri apoyo pro lña libertad avanza significara ruptura juntos cambio",
+        "distinto ganar demostro mugre mendigando votantes bullrich aliandose macri destruyo pais dejo deuda enorme seguimos sufriendo fecha tomatela peluca",
+        "patricia bullrich apoyara javier milei balotaje diferencia socios juntos cambio",
+        "esperando conferencia patricia bullrich apoyara javier milei candidata presidencia viene reunirse integrantes juntos cambio dira minutos juegan viene juntos libertad",
+        "radicales antipodas milei bullrich macri justamente luchar ideas politicas nacimos partido causa regimen derechas peligrosamente desinhibidas",
+        "casamiento arreglado x macri milei bullrich sincero q tuvimos oposicion sentido radicalismo peronismo aberracion gualeguachu salga salga cartas mesa",
+        "baby etchecopar enojado bullrich milei milei coptado cambiemos",
+        "señor pida disculpas publicas señora patricia bullrich veremos dueño voto",
+        "patricia bullrich luis petri punto anunciar apoyo javier milei estallar pacto juntos cambio radicales resisten sector elisa carrio sostienen apoyaran milei prescindencia libertad",
+        "patricia bullrich apoyara javier milei balotaje diferencia socios juntos cambio",
+        "patricia bullrich luis petri punto anunciar apoyo javier milei estallar pacto juntos cambio radicales resisten sector elisa carrio sostienen apoyaran milei prescindencia libertad",
+        "deberia salir publicamente pedir disculpas dichos señora bullrich dando razones comprensibles armar henkidama",
+        "javier milei necesita apoyo bullrich cornejo gente calienta opinion politicos radicalismo pro apoyan perjudicados seran radicalismo pro ceder exigencias apoyar balotaje",
+        "patricia bullrich desmarca cargos juntos cambio apoyara javier milei balotaje"
+    ]
+    
+    token_wc = [
+        ['gano', 'bullrich', 'ignorante', 'rebaja', 'argentino', 'rebaja', 'elecciones', 'democraticas', 'vergüenza'],
+        ['patricia', 'bullrich', 'luis', 'petri', 'hablando', 'representacion', 'apoyan', 'milei', 'patria', 'peligro', 'licito', 'excepto', 'defenderla'],
+        ['impresionante', 'discurso', 'patriotico', 'patricia', 'bullrich', 'valiosa', 'presencia', 'luis', 'petri', 'representante', 'radicalismo', 'mendocino', 'neutralidad', 'sirve', 'riesgo', 'libertad', 'muerte'],
+        ['habla', 'patricia', 'bullrich', 'patria', 'peligro', 'critica', 'cfk', 'milei', 'diferencias', 'obligacion', 'neutrales', 'ayer', 'reunio', 'libertario', 'perdonamos', 'mutuamente'],
+        ['diluvio', 'lloriqueo', 'rojetes', 'argentinos'],
+        ['impresionante', 'discurso', 'patriotico', 'patricia', 'bullrich', 'valiosa', 'presencia', 'luis', 'petri', 'representante', 'radicalismo', 'mendocino', 'neutralidad', 'sirve', 'riesgo', 'libertad', 'muerte'],
+        ['patricia', 'gato', 'macri', 'acaban', 'estrellar', 'juntos', 'faltaba'],
+        ['bullrich', 'adelante', 'elecciones', 'demuestran', 'irresponsabilidad', 'populismo', 'ganar', 'eleccion', 'politico', 'sucido', 'compartimos'],
+        ['bullrich', 'termino', 'firmar', 'ruptura', 'jxc', 'declaracion', 'penosa', 'espero', 'radicalismo', 'deje', 'tirada', 'separe', 'vergüenza', 'postura'],
+        ['bullrich', 'acaba', 'concepto', 'liberalismo', 'encuentro'],
+        ['bullrrich', 'patria', 'peligro', 'milei', 'estaremos', 'peligro', 'decepcionaste', 'despues', 'denigrante', 'milei'],
+        ['confio', 'patricia', 'bullrich', 'radicalismo', 'carrio', 'ricardito', 'alfonsin', 'abajo', 'trabajaron', 'kichnerismo', 'sigo', 'republica', 'corrupcion'],
+        ['jajajajaja', 'saluden', 'milei', 'brazo', 'bullrich'],
+        ['habra', 'ofrecido', 'miley', 'bullrich', 'diga', 'apoya', 'regalo', 'armado', 'seguramente', 'lla', 'pierde', 'diputados', 'tambien', 'pierde', 'coherencia', 'politica', 'tranza', 'casta'],
+        ['bullrich', 'argentina', 'cfk', 'argentinos', 'unimos', 'terminar', 'preso'],
+        ['campaña', 'milei', 'patricia', 'bullrich', 'correcto', '19', '11', 'juntos', 'sacar', 'peor', 'tuvo'],
+        ['millon', 'socialismo', 'radicalismo', 'santafesino', 'fingir', 'demencia', 'elecciones', 'nacionales', 'unirse', 'bullrich', 'apoyaran', 'milei', 'basado', 'quita', 'autoritarismo', 'privatizacion', 'habitan'],
+        ['millon', 'socialismo', 'radicalismo', 'santafesino', 'fingir', 'demencia', 'elecciones', 'nacionales', 'unirse', 'bullrich', 'apoyaran', 'milei', 'basado', 'quita', 'autoritarismo', 'privatizacion', 'habitan'],
+        ['bullrich', 'resolvieron', 'apoyar', 'milei', 'elecciones', 'presidenciales', 'patria', 'peligro', 'permitido', 'defenderla', 'libertad', 'kichnerismo']
+    ]
+
+
+
+def main_df(dataframe:List[pd.DataFrame]) -> List[plt.figure]:
     from app.main.main import wordcloud
     
-    ## VARIABLES GENERALES
-    if verbose:
-        print("WordCloud: Cargando configuración...")
-    resoruces = wordcloud()
-    remover_palabra = resoruces["wordcloud_remover_palabra"]
-    filtrado_palabras = resoruces["wordcloud_filtrado_palabras"]
+    load_resources()
+    nombre = dataframe[0].name
 
 
-
-    ###  CARGAMOS EL BATCH  ###
-    with open(file_path, "rb") as file:
-        batch = pickle.load(file)
-
-    # sistema, confirmar que leiste el archivo pickle
+# CREATING BATCHES
+#######################################################################################
+    ## Creating Mocking Data
+    batch = [content_wc, token_wc]
+    # Verifying data consistency
     assert type(batch) == list, "El archivo pickle no es un list."
     assert len(batch) > 0, "El archivo pickle está vacío."
-    print("Input leído exitosamente.\n")
         
-#######################################################################################
 
     if len(batch) == 2:
         token = True
@@ -61,60 +109,61 @@ def main(file_path:str = None, verbose=False) -> None:
         batch_content = batch[0]
 
     else:
-        print("Error en el formato del archivo pickle.")
-        print("Ejecución interrumpida de forma segura.")
-        exit()
-
+        print("DataError. Missmatch structure.")
+        print("Finishing interpreter.")
+        sys.exit(0)
 #######################################################################################
 
 
 
+    #  IMPORT CONFIGURATION FROM LOCAL FILE
+    # Create wc_params dict from txt file
+    with open(os.path.join(path_utils, "wordcloud_mask_config.txt"), "r", encoding="UTF-8") as file:
+        wc_params = file.read()
 
-    ## PARAMETROS DEL WORDCLOUD
-    if verbose:
-        print("Definición formato final de WordCloud.")
+    try:
+        wc_params = ast.literal_eval(wc_params)
+        wc_params["mascara"] = Path(os.path.join(path_utils, wc_params["mascara"]))
 
+        ## PYDANTIC VALIDATION SCHEMA 
+        validation_schema = WordCloudConfig(**wc_params)
+        try:# (for V1)
+            wc_parmams = validation_schema.dict()
+        except:# (and V2)
+            wc_parmams = validation_schema.model_dump()
+        
+        #TODO: El input inicial es una lista de DataFrame
+        # por lo tanto, para aplicar cualquier configuración
+        # por default, es necesario crear una objeto que 
+        # contenga la configuraciones particulares para cada
+        # DataFrame de la lista.
+        
+        # HARDCODED
+        # Default configuration in function of pd.DataFrame(...).name attribute
+        if nombre.split("-")[-1] in ["positive", "negative"]:
+            if nombre.split("-")[-1] == "positive":
+                wc_params["color_func"] = (84, 179, 153)
+            elif nombre.split("-")[-1] == "negative":
+                wc_params["color_func"] = (231, 102, 76)
+        if False:
+            print("Definir objeto que contenga las configuraciones definitivas \
+                para cada DataFrame en función de su atributo 'name'")
 
+    except Exception as e:
+        print("Error en el formato del archivo de configuración.")
+        print(e)
+        print("Ejecución interrumpida de forma segura.")
+        exit()# DRY
 
-    user_input = "Y"
-
-    if user_input.lower() == "y" or user_input == '':#bucle obligatorio
-
-        with open(os.path.join(path_utils, "wordcloud_mask_config.txt"), "r", encoding="UTF-8") as file:
-            wc_params = file.read()
-
-        try:
-            wc_params = ast.literal_eval(wc_params)
-            wc_params["mascara"] = Path(os.path.join(path_utils, wc_params["mascara"]))
-
-            ##Esquema de validación Pydantic
-            validation_schema = WordCloudConfig(**wc_params)
-            try:
-                wc_parmams = validation_schema.dict()
-            except:
-                wc_parmams = validation_schema.model_dump()
-                
-            if nombre.split("-")[-1] in ["positive", "negative"]:
-                if nombre.split("-")[-1] == "positive":
-                    wc_params["color_func"] = (84, 179, 153)
-                elif nombre.split("-")[-1] == "negative":
-                    wc_params["color_func"] = (231, 102, 76)
-                
- 
-        except Exception as e:
-            print("Error en el formato del archivo de configuración.")
-            print(e)
-            print("Ejecución interrumpida de forma segura.")
-            exit()# DRY
-
-        ## Abrimos el archivo png de la mascara
-        try:
-            print(f"Implementando configuración con Máscara: {wc_params['mascara']}")
-            # mascara_wordcloud = np.array(Image.open(os.path.join(path_utils, wc_params["mascara"])))
-            mascara_wordcloud = np.array(Image.open(wc_params["mascara"]))
-            wc_params.pop("mascara")
-        except FileNotFoundError as e:
-            print("VARIABLE ANULADA: No se encontró el archivo de máscara.")
+    ## Open .png file with mask shape
+    ## Update wC_params dict
+    #TODO: reeplace for contex manager
+    try:
+        print(f"Implementando configuración con Máscara: {wc_params['mascara']}")
+        mascara_wordcloud = np.array(Image.open(wc_params["mascara"]))
+        wc_params.pop("mascara")
+    except FileNotFoundError as e:
+        print("VARIABLE ANULADA: No se encontró el archivo de máscara.")
 
 
     
@@ -123,14 +172,13 @@ def main(file_path:str = None, verbose=False) -> None:
     # usuario, ingresar si desea aplicar filtro de palabras
     # user_input = input("¿Aplicar filtro de palabras? [n/Y]: n\n")
     user_input = "y"
-    if user_input.lower() == "y":
+    if user_input.lower() == "y":#TODO: if df.name.split.sarasa :
         # sistema, leer archivos txt de configuracion y correr modulo de filtrado
-        utils_files = os.listdir(path_utils)
         file = "eliminar_palabras_que_comiencen_con.txt"
         if os.path.isfile(os.path.join(path_utils, file)):
             eliminar_palabras = limpieza_txt(path_utils, file)
         else:
-            if verbose:
+            if False:
                 print("No se encontró el archivo 'eliminar_palabras_que_comiencen_con.txt' en el directorio de APP_utils")
             eliminar_palabras = []
         
@@ -138,7 +186,7 @@ def main(file_path:str = None, verbose=False) -> None:
         if os.path.isfile(os.path.join(path_utils, file)):
             filtrar_palabras = limpieza_txt(path_utils, file)
         else:
-            if verbose:
+            if False:
                 print("No se encontró el archivo 'eliminar_palabras_wordcloud.txt' en el directorio de APP_utils")
             filtrar_palabras = []
             
@@ -146,14 +194,10 @@ def main(file_path:str = None, verbose=False) -> None:
         batch_content = remover_palabra(batch_content, eliminar_palabras)
         batch_content = filtrado_palabras(batch_content, filtrar_palabras)
 
-        if verbose:
+        if False:
             print(f"\nEliminadas palabras: {eliminar_palabras}\nFiltradas palabras: {filtrar_palabras}\n")
     
-    else:
-        if verbose:
-            print("Filtro de palabras no aplicado.")
-    
-
+    ####################################################################################
 
     ###  IDENTIFICACION DEL ULTIMO WORDCLOUD CREADO  ###
     # sistema, verificar la existencia de archivos de salida previos
