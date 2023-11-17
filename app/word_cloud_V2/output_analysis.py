@@ -12,7 +12,7 @@ from typing import List
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 app_root = os.path.dirname(__file__) if "__file__" in locals() else os.getcwd()
-path_utils = os.path.join(project_root, "app", "word_cloud_utils")
+path_config = os.path.join(project_root, "word_cloud_config")
 sys.path.insert(0, project_root)
 
 
@@ -171,16 +171,16 @@ def load_resources():
         ['ojala', 'puras', 'habladurias', 'señora', 'angon']
     ]
 
-def load_configuration_file(config_pathdir: str, names: list) -> dict:
+def load_configuration_file(path_config: str, names: list) -> dict:
     global mascara_wordcloud
     #  LOAD CONFIGURATION FROM LOCAL FILE
     # Create wc_params dict from txt file
-    with open(os.path.join(config_pathdir,"mascaras_png", "wordcloud_mask_config.txt"), "r", encoding="UTF-8") as file:
+    with open(os.path.join(path_config,"mascaras_png", "wordcloud_mask_config.txt"), "r", encoding="UTF-8") as file:
         wc_params = file.read()
     # CONFIGURATION STRUCTURE VALIDATION
     try:
         wc_params = ast.literal_eval(wc_params)
-        wc_params["mascara"] = Path(os.path.join(config_pathdir, wc_params["mascara"]))
+        wc_params["mascara"] = Path(os.path.join(path_config, wc_params["mascara"]))
 
         ## PYDANTIC VALIDATION SCHEMA 
         validation_schema = WordCloudConfig(**wc_params)
@@ -219,6 +219,32 @@ def load_configuration_file(config_pathdir: str, names: list) -> dict:
     
     return wc_params_storage
 
+def load_filters(path_config):
+    # leer archivos txt de configuracion y correr modulo de filtrado
+    file = "eliminar_palabras_que_comiencen_con.txt"
+    if os.path.isfile(os.path.join(path_config, file)):
+        eliminar_palabras = limpieza_txt(path_config, file)
+    else:
+        if False:
+            print("No se encontró el archivo 'eliminar_palabras_que_comiencen_con.txt' en el directorio de APP_utils")
+        eliminar_palabras = []
+
+    file = "eliminar_palabras_wordcloud.txt"
+    if os.path.isfile(os.path.join(path_config, file)):
+        filtrar_palabras = limpieza_txt(path_config, file)
+    else:
+        if False:
+            print("No se encontró el archivo 'eliminar_palabras_wordcloud.txt' en el directorio de APP_utils")
+        filtrar_palabras = []
+
+    return (eliminar_palabras, filtrar_palabras)
+
+def apply_filters(batch: list, filter_1, filter_2) -> list:
+        
+        batch = remover_palabra(batch, filter_1)
+        batch = filtrado_palabras(batch, filter_2)
+        
+        return batch
 
 def main_df(dataframes:List[pd.DataFrame]=None) -> List[plt.figure]:
     from app.main.main import wordcloud
@@ -236,49 +262,36 @@ def main_df(dataframes:List[pd.DataFrame]=None) -> List[plt.figure]:
         df_3.name = "tw-cholula-sofia_positive"
 
         dataframes = [df_1, df_2, df_3]
-    
+
+    # Presets    
     nombres = []
     for d in dataframes:#TODO: list comprehension
         nombres.append(d.name)
         
+    wc_params_storage = load_configuration_file(path_config, nombres)
     
-
-
+    # Batch Creation: batch = [[batch_content, batch_token], ...]
+    batch = []
+    for i in range(len(nombres)):
+        content = dataframes[i].content_wc.to_list()
+        token = dataframes[i].token_wc.to_list()
+        batch.append([content, token])
+    
+    
+    # Filtrado: on/off depends on dataframes name
+    filtros = load_filters(path_config)
+    for i in range(len(nombres)):
+        if nombres[i].split("_")[1] == "filtered":
+            print(nombres[i])#TODO: Borrar
+            batch[i][0] = apply_filters(batch[i][0], *filtros)
+            batch[i][1] = apply_filters(batch[i][1], *filtros)
+            
 
 # Ejecución
 main_df()
 
 def TODO():
-    # assert if df's doesn't have content_wc and token_wc columns
-
-    # CREATING BATCHES
-    #######################################################################################
-    ## Creating Mocking Data
-    batch = [content_wc, token_wc]
-    # Verifying data consistency
-    assert type(batch) == list, "El archivo pickle no es un list."
-    assert len(batch) > 0, "El archivo pickle está vacío."
-        
-
-    if len(batch) == 2:
-        token = True
-        batch_content, batch_token = batch
-
-    elif len(batch) == 1:
-        token = False
-        batch_content = batch[0]
-
-    else:
-        print("DataError. Missmatch structure.")
-        print("Finishing interpreter.")
-        sys.exit(0)
-    #######################################################################################
-
-
-
-
-
-    
+   
     """
     Respecto al nombre del DataFrame:
         - si el archivo de apertura se llama, nombre-arhivo.extension
@@ -289,31 +302,7 @@ def TODO():
     ### LIMPIEZA ITERATIVA DEL BATCH  ###
     # usuario, ingresar si desea aplicar filtro de palabras
     # user_input = input("¿Aplicar filtro de palabras? [n/Y]: n\n")
-    user_input = "y"
-    if user_input.lower() == "y":#TODO: if df.name.split.sarasa :   
-        # sistema, leer archivos txt de configuracion y correr modulo de filtrado
-        file = "eliminar_palabras_que_comiencen_con.txt"
-        if os.path.isfile(os.path.join(path_utils, file)):
-            eliminar_palabras = limpieza_txt(path_utils, file)
-        else:
-            if False:
-                print("No se encontró el archivo 'eliminar_palabras_que_comiencen_con.txt' en el directorio de APP_utils")
-            eliminar_palabras = []
-        
-        file = "eliminar_palabras_wordcloud.txt"
-        if os.path.isfile(os.path.join(path_utils, file)):
-            filtrar_palabras = limpieza_txt(path_utils, file)
-        else:
-            if False:
-                print("No se encontró el archivo 'eliminar_palabras_wordcloud.txt' en el directorio de APP_utils")
-            filtrar_palabras = []
-            
-        # sistema, aplicar filtros
-        batch_content = remover_palabra(batch_content, eliminar_palabras)
-        batch_content = filtrado_palabras(batch_content, filtrar_palabras)
-
-        if False:
-            print(f"\nEliminadas palabras: {eliminar_palabras}\nFiltradas palabras: {filtrar_palabras}\n")
+    
     
     ####################################################################################
 
