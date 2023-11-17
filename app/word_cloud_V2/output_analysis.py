@@ -1,4 +1,5 @@
 ## Librerias Nativas de Python y de Terceros
+import copy
 import sys, os, time, ast
 from pathlib import Path
 from wordcloud import WordCloud
@@ -27,11 +28,15 @@ except:
 ## Librerías propias
 from tools.feed import procesar_file_csv, procesar_file_png
 
+"""
 
+"""
   
 def load_resources():
     global remover_palabra, filtrado_palabras
     global content_wc, token_wc
+    global content_wc_II, token_wc_II
+    global content_wc_III, token_wc_III
 
     resources = wordcloud()
     remover_palabra = resources["wordcloud_remover_palabra"]
@@ -53,13 +58,11 @@ def load_resources():
         "baby etchecopar enojado bullrich milei milei coptado cambiemos",
         "señor pida disculpas publicas señora patricia bullrich veremos dueño voto",
         "patricia bullrich luis petri punto anunciar apoyo javier milei estallar pacto juntos cambio radicales resisten sector elisa carrio sostienen apoyaran milei prescindencia libertad",
-        "patricia bullrich apoyara javier milei balotaje diferencia socios juntos cambio",
         "patricia bullrich luis petri punto anunciar apoyo javier milei estallar pacto juntos cambio radicales resisten sector elisa carrio sostienen apoyaran milei prescindencia libertad",
         "deberia salir publicamente pedir disculpas dichos señora bullrich dando razones comprensibles armar henkidama",
         "javier milei necesita apoyo bullrich cornejo gente calienta opinion politicos radicalismo pro apoyan perjudicados seran radicalismo pro ceder exigencias apoyar balotaje",
         "patricia bullrich desmarca cargos juntos cambio apoyara javier milei balotaje"
     ]
-    
     token_wc = [
         ['gano', 'bullrich', 'ignorante', 'rebaja', 'argentino', 'rebaja', 'elecciones', 'democraticas', 'vergüenza'],
         ['patricia', 'bullrich', 'luis', 'petri', 'hablando', 'representacion', 'apoyan', 'milei', 'patria', 'peligro', 'licito', 'excepto', 'defenderla'],
@@ -82,17 +85,174 @@ def load_resources():
         ['bullrich', 'resolvieron', 'apoyar', 'milei', 'elecciones', 'presidenciales', 'patria', 'peligro', 'permitido', 'defenderla', 'libertad', 'kichnerismo']
     ]
 
+    content_wc_II = [
+        "obvio bullrich iba milei derecha problema dejar diferencias unirse izquierda esperemos votantes pro tengan criterio",
+        "info bullrich petri apoyarian milei",
+        "politicos venezolanos aprender pais prioridad dejar ego soberbia estupidez politica navegar aguas",
+        "bullirch anunciar apoya millei rompe juntos cambio peronismo ratoooo",
+        "pensar investigo millones votos votaron massa patricia bullrich milei salieron corruptos necios kirchneristas habidos delito trampa investiguen favor fraude argenzuela k lpm",
+        "bullrich gana kirchnerismo juntos cambio camino disolucion conocemos practicas extorsiones ingobernabilidad posicion reves permitiendo jxc quede presa",
+        "petri amenazada cuchillo pedir votar massa darle apoyo explicito milei",
+        "imaginan bullrich petri salgan pedir voto massa sueño",
+        "macri animal politica liquido rivales internos saca radicalismo apoyo milei entierra bullrich haciendole comer sapo publico pacto cargos amigos gabinete milei casta debo",
+        "macri obligar bullrich aceptar miedo carpeta filmacion mmmmm",
+        "radicalismo afuera coalicion civica afuera larreta afuera afuera tibios cagones corruptos",
+        "confirma mauricio macri patricia bullrich reunieron javier milei",
+        "pelado acaba confirmar anoche juntaron personalmente milei macri bullrich viene frente",
+        "patricia bullrich apoyara milei balotaje diferencia socios juntos cambio via",
+        "lei salir pato apoya milei vuelta libertarios digo fiscalicen lacra pais massa capaz vender hijo fiscalicen",
+        "mediodia termina partido politico bullrich anunciara oficialmente apoyo hara larreta fuego amigo desesperado macrista locura muchachos",
+        "patricia bullrich anuncia mauricio macri apoyaran javier milei balotaje massa decision deja borde fractura juntos cambio decision tomaron reunion ex presidente ex ministra seguridad milei",
+        "bullrich confirma apoyo pro javier milei balotaje ucr coalicion civica pedian neutralidad acusan macri romper juntos cambio",
+        "macri bullrich reunieron javier milei mira video deja comentario"
+    ]
+    token_wc_II = [
+        ['pato', 'bullrich', 'conto', 'radicalismo', 'apoyara', 'milei'],
+        ['brutos', 'pendejos', 'pobres', 'votaron', 'milei', 'trabajadores', 'informales', 'pobres', 'albañil', 'plomero', 'jardinero', 'bullrich', 'famosos', 'pobres', 'derecha'],
+        ['gano', 'milei', 'milei', 'ganaba', 'bullrich', 'iba', 'bullrich', 'kirchnerismo'],
+        ['bullirch', 'anunciar', 'apoya', 'millei', 'rompe', 'juntos', 'peronismo', 'ratoooo'],
+        ['20', 'preguntarle', 'pedir', 'perdon', 'bullrich', 'mierda', 'hicieron', '30', 'operaciones', 'dispuesto', 'borron', 'ustedes', 'siguen', 'insistiendo'],
+        ['radicales', 'antipodas', 'milei', 'bullrich', 'macri', 'justamente', 'luchar', 'politicas', 'nacimos', 'derechas', 'peligrosamente', 'desinhibidas'],
+        ['deberia', 'macri', 'bullrich', 'milei', 'traidores', 'radicalismo', 'perdio', 'bullrich', 'brazos'],
+        ['estamos', 'quiebre', 'ruptura', 'definitiva', 'juntos', 'demostrarse', 'traidores', 'bullrich', 'milei'],
+        ['anuncio', '12', 'bullrich', 'luis', 'petri', 'anoche', 'reunieron', 'macri', 'milei', 'apoyo', 'explicito', 'libertario', 'esquema', 'gobernabilidad', 'conjunta'],
+        ['macri', 'reunio', 'milei', 'ahi', 'reunir', 'bullrich', 'suspende', 'jxc', 'bullrich', 'conferencia', 'prensa', 'petri'],
+        ['bullrich', 'confirma', 'apoyo', 'javier', 'milei', 'balotaje', 'ucr', 'coalicion', 'civica', 'pedian', 'neutralidad', 'acusan', 'macri', 'romper', 'juntos'],
+        ['necesitamos', 'pregunten', 'apoyo', 'bullrich', 'petri', 'miley', 'responda', 'votos'],
+        ['larreta', 'carrio', 'radicales', 'complicaron', 'gobernabilidad', 'macri', 'iban', 'traicionar', 'bullrich', 'perdonarlos', 'echarlos'],
+        ['milei', 'ofrecio', 'atras', 'bullrich', 'ministerio'],
+        ['patricia', 'bullrich', 'conferencia', 'prensa', 'mediodia', 'anticipan', 'anunciara', 'apoyara', 'javier', 'milei', 'balotaje'],
+        ['bullrich', 'pego', 'paliza', 'larreta', 'cambiemos', 'purifico', 'sacaron', 'traidores'],
+        ['trataban', 'casta', 'bullrich', 'milei', 'metiendo', 'casta', 'odiaba', 'quedamos'],
+        ['juntos', 'razon', 'rompio', '2019', '2020', 'carrio', 'morales', 'larreta', 'lusto', 'sellaron', 'excluia', 'excluian', 'recien', 'iba', '41%', 'andas'],
+        ['bullrich', 'anuncio', 'apoyara', 'javier', 'ballotage']
+    ]
+
+    content_wc_III =[
+        "hora sucedio merecen escarmiento jamas volveran acercar puedes ayudarme hora",
+        "esperamos ofrecemos servicios gratuitos orientacion tramites municipales martes noviembre presidencia mpal am trabaja cumple avanza ciudadania",
+        "gobierno san pedro cholula ponen disposicion centros acopio apoyar sumate favor familias afectadas huracan horario hrs",
+        "obra intermunicipal toca gobernador puebla llama gobernador",
+        "ciudadanos recordamos horarios recoleccion basura hrs lunes",
+        "detienen octubre presuntos delincuentes infractores informa resultados mensuales estrategias combate delincuencia",
+        "tardes mensaje directo envianos nombre direccion numero contrato motivo solicitud",
+        "detenidos mes octubre resultados derivado diversas estrategias procurar entorno paz informacion",
+        "tenia cholula sirven infracciones fotomultas",
+        "revisamos damos continuidad temas trabajando brindar atencion calidad familias cholultecas alianza compromiso trabaja cumple avanza mejores servicios",
+        "detenidos resultados ssc cholula octubre",
+        "inaugura calle oriente barrio jesus tlatempa",
+        "esperamos jornada integral atencion ciudadana ofrecemos servicios gratuitos orientacion tramites municipales martes noviembre presidencia mpal am alianza ciudadania",
+        "positiva reactivacion economica municipio san pedro cholula acciones impulso alcaldesa atiende alta demanda materia educativa temas ocupan respuesta mano",
+        "cholula ⃣ municipios puebla acreditado elementos certificado unico policial trabajamos cumplimos avanzamos tranquilidad familias",
+        "recuerda areas gobierno cholula brindando servicio publico sabados am pm esperamos gusto seguir trabajo conjunto beneficia familias",
+        "sorteo perteneces clase remisos acude presentando cartilla noviembre mañana complejo cultural cholula av pte",
+        "cuida ambiente evita montoneros organismo operador servicio limpia san pedro cholula informa horas recoleccion basura",
+        "lamentamos molestias permitenos apoyarte levantamiento reporte envianos mensaje directo siguientes datos favor numero contrato nombre titular direccion telefono contacto"
+    ]
+    token_wc_III = [
+        ['animo', 'nooo'],
+        ['cholula', '1', '22', 'municipios', 'puebla', 'acreditado', 'certificado', 'unico', 'policial', 'trabajamos', 'cumplimos', 'avanzamos', 'tranquilidad', 'familias'],
+        ['pues', 'municipio', 'camionetas', 'nadie', 'manifestacion', 'injusto', 'extorsionando', 'municipio'],
+        ['cholula', 'traves', 'bienestar', 'cosme', 'texintla', 'invita', 'elaboracion', 'figuras', 'navideñas', 'podras', 'desarrollar', 'habilidades', 'emprender', 'informacion', '221', '596', '0249'],
+        ['visitamos', '3ra', 'allende', 'entepontla', 'invertimos', '2', '3', 'mdp', 'adoquinarla', 'instalar', '9', 'luminarias', 'banquetas', 'guarniciones', 'beneficiar', 'primaria', 'vecina', 'trabajamos', 'cumplimos', 'avanzamos'],
+        ['traves', 'secretaria', 'infraestructura', 'dimos', 'mantenimiento', 'poda', 'deshierbe', 'barrido', 'calles', 'cuachayotla', 'circuito', 'ciclismo', 'trabaja', 'cumple', 'avanza', 'impulsando', 'deporte'],
+        ['sera', 'difundan', 'conductores', 'anden', 'cuidado', 'recta'],
+        ['cuidemos', 'presentacion', 'patrimonios', 'mantengamos'],
+        ['vives', 'pedro', 'cholula', 'vaya', 'horarios', 'colonia', 'escucha', 'camion', 'saca', 'basura', 'barre', 'banqueta', 'evita', 'atascar', 'alcantarillas', 'operador', 'limpia', 'pedro', 'cholula'],
+        ['sorteo', '2023', 'perteneces', '2005', 'remisos', 'acude', 'presentando', 'cartilla', '12', 'noviembre', '9', '00', 'complejo', 'cholula', '4', 'pte'],
+        ['cholula', '1', '22', 'municipios', 'puebla', 'acreditado', 'certificado', 'unico', 'policial', 'trabajamos', 'cumplimos', 'avanzamos', 'tranquilidad', 'familias'],
+        ['caera', 'preciado', 'liquido', '2'],
+        ['igual', 'ayer', 'cobrar', 'estan', 'buenos'],
+        ['buenas', 'tardes', 'directo', 'envianos'],
+        ['organismo', 'operador', 'limpia', 'pedro', 'cholula', 'invita', 'cholultecos', 'sumarse'],
+        ['sabado', '4', 'noviembre', 'barrio', 'maria', 'xixitla', 'lleva', 'chingada'],
+        ['pedro', 'cholula', 'ponen', 'disposicion', '2', 'centros', 'acopio', 'apoyar', 'sumate', 'familias', 'afectadas', 'huracan', 'horario', '8', '30', '15', '30'],
+        ['organismo', 'operador', 'limpia', 'pedro', 'cholula', 'limpia', 'chula', 'cholula', 'dejamos', 'separar', 'comercializacion'],
+        ['ojala', 'puras', 'habladurias', 'señora', 'angon']
+    ]
+
+def load_configuration_file(config_pathdir: str, names: list) -> dict:
+    global mascara_wordcloud
+    #  LOAD CONFIGURATION FROM LOCAL FILE
+    # Create wc_params dict from txt file
+    with open(os.path.join(config_pathdir,"mascaras_png", "wordcloud_mask_config.txt"), "r", encoding="UTF-8") as file:
+        wc_params = file.read()
+    # CONFIGURATION STRUCTURE VALIDATION
+    try:
+        wc_params = ast.literal_eval(wc_params)
+        wc_params["mascara"] = Path(os.path.join(config_pathdir, wc_params["mascara"]))
+
+        ## PYDANTIC VALIDATION SCHEMA 
+        validation_schema = WordCloudConfig(**wc_params)
+        try:# (for V1)
+            wc_parmams = validation_schema.dict()
+        except:# (and V2)
+            wc_parmams = validation_schema.model_dump()
+    except Exception as e:
+        print("Error en el formato del archivo de configuración.")
+        print(e)
+        print("Ejecución interrumpida.")
+        sys.exit(0)
+    # Open .png file with mask shape
+    #TODO: reeplace for contex manager
+    try:
+        print(f"Implementando configuración con Máscara: {wc_params['mascara']}")
+        mascara_wordcloud = np.array(Image.open(wc_params["mascara"]))
+        wc_params.pop("mascara")
+        
+    except FileNotFoundError as e:
+        print("ERROR DE SISTEMA: Colocar un archivo .png con una mascara en tamaño deseado en la carpeta de configuracion")
+        sys.exit(0)
+        
+    # Personalized configurations
+    wc_params_storage = {}
+    for name in names:
+        default_wc_params = copy(wc_params)
+        # Default configuration in function of pd.DataFrame(...).name attribute
+        if name.split("-")[-1] in ["positive", "negative"]:
+            if name.split("-")[-1] == "positive":
+                default_wc_params["color_func"] = (84, 179, 153)
+            elif name.split("-")[-1] == "negative":
+                default_wc_params["color_func"] = (231, 102, 76)
+        
+        wc_params_storage.update({name:default_wc_params})
+    
+    return wc_params_storage
 
 
-def main_df(dataframe:List[pd.DataFrame]) -> List[plt.figure]:
+def main_df(dataframes:List[pd.DataFrame]=None) -> List[plt.figure]:
     from app.main.main import wordcloud
     
     load_resources()
-    nombre = dataframe[0].name
+
+    if dataframes is None:
+        df_1 = pd.DataFrame({"content_wc":content_wc, "token_wc":token_wc})
+        df_2 = pd.DataFrame({"content_wc":content_wc_II, "token_wc":token_wc_II})
+        df_3 = pd.DataFrame({"content_wc":content_wc_III, "token_wc":token_wc_III})
+
+        #HARDCODED
+        df_1.name = "octubre-untitled"
+        df_2.name = "octubre-untitled_filtered"
+        df_3.name = "tw-cholula-sofia_positive"
+
+        dataframes = [df_1, df_2, df_3]
+    
+    nombres = []
+    for d in dataframes:#TODO: list comprehension
+        nombres.append(d.name)
+        
+    
 
 
-# CREATING BATCHES
-#######################################################################################
+
+# Ejecución
+main_df()
+
+def TODO():
+    # assert if df's doesn't have content_wc and token_wc columns
+
+    # CREATING BATCHES
+    #######################################################################################
     ## Creating Mocking Data
     batch = [content_wc, token_wc]
     # Verifying data consistency
@@ -112,67 +272,25 @@ def main_df(dataframe:List[pd.DataFrame]) -> List[plt.figure]:
         print("DataError. Missmatch structure.")
         print("Finishing interpreter.")
         sys.exit(0)
-#######################################################################################
+    #######################################################################################
 
 
 
-    #  IMPORT CONFIGURATION FROM LOCAL FILE
-    # Create wc_params dict from txt file
-    with open(os.path.join(path_utils, "wordcloud_mask_config.txt"), "r", encoding="UTF-8") as file:
-        wc_params = file.read()
-
-    try:
-        wc_params = ast.literal_eval(wc_params)
-        wc_params["mascara"] = Path(os.path.join(path_utils, wc_params["mascara"]))
-
-        ## PYDANTIC VALIDATION SCHEMA 
-        validation_schema = WordCloudConfig(**wc_params)
-        try:# (for V1)
-            wc_parmams = validation_schema.dict()
-        except:# (and V2)
-            wc_parmams = validation_schema.model_dump()
-        
-        #TODO: El input inicial es una lista de DataFrame
-        # por lo tanto, para aplicar cualquier configuración
-        # por default, es necesario crear una objeto que 
-        # contenga la configuraciones particulares para cada
-        # DataFrame de la lista.
-        
-        # HARDCODED
-        # Default configuration in function of pd.DataFrame(...).name attribute
-        if nombre.split("-")[-1] in ["positive", "negative"]:
-            if nombre.split("-")[-1] == "positive":
-                wc_params["color_func"] = (84, 179, 153)
-            elif nombre.split("-")[-1] == "negative":
-                wc_params["color_func"] = (231, 102, 76)
-        if False:
-            print("Definir objeto que contenga las configuraciones definitivas \
-                para cada DataFrame en función de su atributo 'name'")
-
-    except Exception as e:
-        print("Error en el formato del archivo de configuración.")
-        print(e)
-        print("Ejecución interrumpida de forma segura.")
-        exit()# DRY
-
-    ## Open .png file with mask shape
-    ## Update wC_params dict
-    #TODO: reeplace for contex manager
-    try:
-        print(f"Implementando configuración con Máscara: {wc_params['mascara']}")
-        mascara_wordcloud = np.array(Image.open(wc_params["mascara"]))
-        wc_params.pop("mascara")
-    except FileNotFoundError as e:
-        print("VARIABLE ANULADA: No se encontró el archivo de máscara.")
 
 
     
-
+    """
+    Respecto al nombre del DataFrame:
+        - si el archivo de apertura se llama, nombre-arhivo.extension
+        - 'nombre-archivo' siempre será el comienzo
+        - 'nombre-archivo_{filtered:optional}': el elemento split('_')[1] define la activación del filtro
+        - 'nombre-archivo_{}_{sentiment:optional}': el elemento split('_')[-1] define si se aplican valores por default al df
+    """
     ### LIMPIEZA ITERATIVA DEL BATCH  ###
     # usuario, ingresar si desea aplicar filtro de palabras
     # user_input = input("¿Aplicar filtro de palabras? [n/Y]: n\n")
     user_input = "y"
-    if user_input.lower() == "y":#TODO: if df.name.split.sarasa :
+    if user_input.lower() == "y":#TODO: if df.name.split.sarasa :   
         # sistema, leer archivos txt de configuracion y correr modulo de filtrado
         file = "eliminar_palabras_que_comiencen_con.txt"
         if os.path.isfile(os.path.join(path_utils, file)):
