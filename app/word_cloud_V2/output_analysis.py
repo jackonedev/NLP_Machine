@@ -1,5 +1,5 @@
 ## Librerias Nativas de Python y de Terceros
-import copy
+from copy import copy
 import sys
 import os
 import ast
@@ -13,7 +13,6 @@ from typing import List
 
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-app_root = os.path.dirname(__file__) if "__file__" in locals() else os.getcwd()
 path_config = os.path.join(project_root, "word_cloud_config")
 sys.path.insert(0, project_root)
 
@@ -176,7 +175,7 @@ def load_configuration_file(path_config: str, names: list) -> dict:
     # CONFIGURATION STRUCTURE VALIDATION
     try:
         wc_params = ast.literal_eval(wc_params)
-        wc_params["mascara"] = Path(os.path.join(path_config, wc_params["mascara"]))
+        wc_params["mascara"] = Path(os.path.join(path_config, 'mascaras_png', wc_params["mascara"]))
 
         ## PYDANTIC VALIDATION SCHEMA 
         validation_schema = WordCloudConfig(**wc_params)
@@ -283,10 +282,17 @@ def wordcloud_content(subbatch, wc_params):
     
     return wordcloud.generate(word_cloud)
 
-def wordcloud_token(subbatch, wc_params):
-
-    word_cloud = " ".join(subbatch)
-    
+def wordcloud_token(subbatch:list, wc_params:dict) -> WordCloud:
+    print("Hola Mundo!")
+    word_cloud = ""
+    word_cloud = [word_cloud + " ".join(twc) for twc in subbatch]
+    word_cloud = " ".join(word_cloud).strip()
+    print(f"Lo más preciado que tengo es saber que True == 1 == {len(word_cloud)}")
+    print(f"""
+     index_0:     {type(word_cloud[0])}
+     
+     index_-1 =   {word_cloud[-1]}
+          """)
     wordcloud = WordCloud(
         mask=mascara_wordcloud,
         collocations=False,
@@ -301,10 +307,14 @@ def wordcloud_token(subbatch, wc_params):
     return wordcloud.generate(word_cloud)
 
 
-def final_output(dataframes:List[pd.DataFrame]=None) -> List[wordcloud.wordcloud.WordCloud]:
-    # from app.main.main import wordcloud
+def final_output(dataframes:List[pd.DataFrame]=None) -> List[WordCloud]:
+    from app.main.main import wordcloud
     """
-    TODO: DOCS
+    Esta funcion ejecuta la libreria wordcloud,
+    devuelve el objeto tipo WordCloud propio de la libreria wordcloud.
+    
+    Recibe una lista de DataFrames y devuelve una lista de objetos tipo WordCloud
+    
     Respecto al nombre de cada DataFrame:
         - si el archivo de apertura se llama, nombre-arhivo_valores_adicionales.extension
         - 'nombre-archivo' siempre será el comienzo
@@ -340,11 +350,13 @@ def final_output(dataframes:List[pd.DataFrame]=None) -> List[wordcloud.wordcloud
     # Filtrado: on/off depends on the name of dataframes
     filtros = load_filters(path_config)
     for i in range(len(nombres)):
-        if nombres[i].split("_")[1] == "filtered":
-            print("activando filtros para: ",nombres[i])#TODO: Borrar
-            batch[i][0] = apply_filters(batch[i][0], *filtros)
-            batch[i][1] = apply_filters(batch[i][1], *filtros)
-            
+        nombre = nombres[i].split("_")
+        if len(nombre) > 1:
+            if nombre[1] == "filtered":
+                print("activando filtros para: ",nombre[0])#TODO: Borrar
+                batch[i][0] = apply_filters(batch[i][0], *filtros)
+                batch[i][1] = apply_filters(batch[i][1], *filtros)
+
     # Wordcloud params update
     wc_params_storage = update_wc_colormap(wc_params_storage, nombres)
     # plt.figure(figsize=(20,8))

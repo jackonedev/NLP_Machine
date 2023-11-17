@@ -1,36 +1,37 @@
 ## Librerias Nativas de Python y de Terceros
-import sys, os, time, pickle
+import sys, os
+import numpy as np
 import pandas as pd
+from typing import List
+from wordcloud import WordCloud
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-app_root = os.path.dirname(__file__) if "__file__" in locals() else os.getcwd()
 sys.path.insert(0, project_root)
 
 ## Aplicaciones propias
-from app.main.main import wordcloud
+from app.main.main import wordcloud as ingest_resources
+
 try:
-    from app.word_cloud.main import main as Main
-    from app.word_cloud.main import limpieza_txt
-    from app.word_cloud.output_analysis import final_output
+    from app.word_cloud_V2.main import limpieza_txt
+    from app.word_cloud_V2.output_analysis import final_output
 except:
-    from main import main as Main
     from main import limpieza_txt
+    from output_analysis import final_output
 
 ## Libreria propia
 from tools.feature_adjust import eliminar_caracteres_no_imprimibles, aplicar_stopwords
-from tools.feed import procesar_file_csv, crear_directorio_salida_numerado
 
 
 
   ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###
-###  ###  ###  ###  ###  ###  PROGRAMA PRINCIPAL  ###  ###  ###  ###  ###  ###
+###  ###  ###  ###  ###  ###  FUNCIONES PRINCIPALES  ###  ###  ###  ###  ###  ###
   ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###
 
 def load_resources():
     global remover_palabra, procesamiento_texto
     global feed, data_process, preparation
 
-    resources = wordcloud()
+    resources = ingest_resources()
     remover_palabra = resources["wordcloud_remover_palabra"]
     procesamiento_texto = resources["wordcloud_procesamiento_texto"]
     feed = resources["main_feed"]
@@ -191,7 +192,8 @@ def stop_words_execution(df:pd.DataFrame, filtros_bool:list=None, max_workers:in
 ##############################################################################
 ##############################################################################
 
-def main_df(df:pd.DataFrame, filtros=None, max_workers=4) -> pd.DataFrame:# La próxima actualización es List[pd.DataFrame]
+def main_df(df:pd.DataFrame, filtros=None, max_workers=4):# -> List[List[pd.DataFrame], List[WordCloud], List[np.array]]:
+    global dataframes
     """
     PROCESOS:
     
@@ -205,9 +207,23 @@ def main_df(df:pd.DataFrame, filtros=None, max_workers=4) -> pd.DataFrame:# La p
     - 4to: implementar stop_words -> content_wc
     
     2. Agregaciones en el dataset:
+    - todo lo relacionado al proceso de tokenizacion
+    - content_wc y token_wc
     
-    3. Instanciación objeto tipo wordcloud.wordcloud.WordCloud
-    
+    3. Almacenamiento Instanciación objeto tipo wordcloud.wordcloud.WordCloud
+        - el objetivo es brindarle al user acceso a la imagen del wordcloud
+        por medio del método .to_image()
+        
+    4. Almacenamiento de los Array obtenidos por el wordcloud
+        - Se hace a través del método .to_array(), y también existe 
+        el método .to_svg()
+        
+    RETURN:
+    - List[dataframes, wordcloud_storage, arrayfield_storage]
+    - dataframes: List[pd.DataFrame]
+    - wordcloud_storage: List[wordcloud.wordcloud.WordCloud]
+    - arrayfield_storage: List[wordcloud.wordcloud.WordCloud.to_array()]
+   
     """
     load_resources()
 
@@ -221,63 +237,19 @@ def main_df(df:pd.DataFrame, filtros=None, max_workers=4) -> pd.DataFrame:# La p
 
     # verificar que df tenga name
     df = token_aggregation(df)
-        
 
     # Recibe una lista de str,y el path donde se encuentran ambos archivos txt (nombres hardcodeados)
     path_utils = os.path.join(project_root, "word_cloud_config")
     df = word_filtering(df, *word_filters_load(path_utils))
-    
 
-    df = stop_words_execution(df)#, filtros, max_workers)
+    dataframes = stop_words_execution(df)#, filtros, max_workers)
 
-    # CAMBIAR ESTRUCTURA A List[pd.DataFrame]
-    wordcloud_storage = final_output(df, path_utils)
+    # CAMBIAR ESTRUCTURA: List[pd.DataFrame] -> List[wordcloud.WordCloud]
+    wordcloud_storage = final_output(dataframes)
 
+    # CAMPO VECTORIAL    
+    # arrayfield_storage = [wcs.to_array() for wcs in wordcloud_storage]
+    # pd.Series(array_wc.flatten()).value_counts()
     
-    # hacer algo con result
-    # print(file_path)
-    print("Programa ejecutado exitosamente")
-    # return #Datasets con los stop_words aplicados
-    return df# Debería devolver una lista con dataframes. Sea de longitud 1 para procesamiento lineal o multiples elementos para optimizacion por multihilos en la seccion de stop_words.
-
-
-def new_finale(df): #TENER SIEMPRE PRESENTE QUE SE VA A ACTUALIZAR A List[pd.DataFrame]
-    """
-    Esta funcion ejecuta la libreria wordcloud
-    
-    devuelve el objeto tipo WordCloud propio de la libreria wordcloud
-    
-    
-    para que eso ocurra, se debe incorporar la logica de output_analytics.py
-    
-    Algo muy importante a tener en cuenta es que debe recibir el diccionario de params
-    en vez de buscar el txt correspondiente.
-    Se debe ser cuidadoso con los valores por default que se van a establecer
-    Recudir al esquema de validacion en /schemas/...
-    
-    Agregacion pendiente: el array vectorial con el que fue conformado el wordcloud
-    # array_wc = wordcloud.to_array()
-    # pd.Series(array_wc.flatten())
-    # # pd.Series(array_wc.flatten()).value_counts()
-    
-    """
-    dataset = [df]
-    
-
-# PROVISORIO
-def finale(df, path):
-    """
-    Mete el batch de content y el batch de token dentro de una lista
-    y guarda la lista dentro de un fichero pickle
-    devuelve el path de dicho fichero pickle.
-    """
-
-    ### OUTPUT PARA OUTPUT_ANALYTICS.PY ###
-    output = [df.content_wc.to_list(), df.token_wc.to_list()]
-
-    file_path = os.path.join(path, "wordcloud_batch.pickle")
-
-    with open(file_path, "wb") as file:
-        pickle.dump(output, file)
-    
-    return file_path
+    print(f"{__name__} ended succesfully.")
+    return [dataframes, wordcloud_storage]#, arrayfield_storage]
