@@ -11,6 +11,7 @@ from app.main.main import wordcloud
 try:
     from app.word_cloud.main import main as Main
     from app.word_cloud.main import limpieza_txt
+    from app.word_cloud.output_analysis import final_output
 except:
     from main import main as Main
     from main import limpieza_txt
@@ -144,7 +145,7 @@ def token_aggregation(df):
 def stop_words_multithread(batch_content, filtros_bool, max_workers):
     pass  
 
-#TODO: devuelve una lista de DataFrames
+#OK: devuelve una lista de DataFrames
 def stop_words_execution(df:pd.DataFrame, filtros_bool:list=None, max_workers:int=4) -> list:
     """
     Esta funcion recibe 3 parámetros: df: pd.DataFrame, filtros:list = None, max_workers:int = 4
@@ -156,8 +157,8 @@ def stop_words_execution(df:pd.DataFrame, filtros_bool:list=None, max_workers:in
     Solo acepta filtros booleanos.
     Si la lista tiene 1 elemento, ese elemento es un filtro booleano, y si tiene 2 elementos, cada elemento es un filtro booleano, sucesivamente...
     
-    Los DataFrame resultantes tienen agregada una columna llamada "content_cleaned"
-    Dicha columna es la que ingresa en el objeto Wordcloud de la librería wordcloud
+    Los DataFrame resultantes tienen agregada una columna llamada "content_cleaned", y ahora otra, "content_wc".
+    Dicha columna, y "token_wc" son las que procesa "final_output()".
     
     """
     assert "content_cleaned" in df.columns, "df debe tener una columna content_cleaned"
@@ -172,14 +173,15 @@ def stop_words_execution(df:pd.DataFrame, filtros_bool:list=None, max_workers:in
         
     if not len(filtros_bool) > 0:
         batch_content = aplicar_stopwords(df.content_cleaned.to_list())
+        df["content_wc"] = batch_content
+        #TODO: # assert isinstance(df.name, str), "se pierde el nombre"
+        dataframes = [df]
     else:#TODO
         print("no está implementado")
-        1/0
+        sys.exit(0)
         batch_content = stop_words_multithread(batch_content, filtros_bool, max_workers)
-        # multithread va a ser necesario ordenar los outputs
-    
-    df["content_wc"] = batch_content
-    return df
+        # multithread; va a ser necesario ordenar los sub-batches del output
+    return dataframes
 
 
 
@@ -193,6 +195,7 @@ def main_df(df:pd.DataFrame, filtros=None, max_workers=4) -> pd.DataFrame:# La p
     """
     PROCESOS:
     
+    1. Preprocesamiento:
     - Se cargan los recursos enviados desde main/main.py
     - 1er procesamiento: eliminar duplicados del content
     - Se ejecuta preprocesamiento
@@ -200,6 +203,11 @@ def main_df(df:pd.DataFrame, filtros=None, max_workers=4) -> pd.DataFrame:# La p
     - 2do: procesamiento de los tokens existentes -> token_wc
     - 3ro: filtrado de palabras -> content_cleaned
     - 4to: implementar stop_words -> content_wc
+    
+    2. Agregaciones en el dataset:
+    
+    3. Instanciación objeto tipo wordcloud.wordcloud.WordCloud
+    
     """
     load_resources()
 
@@ -222,8 +230,8 @@ def main_df(df:pd.DataFrame, filtros=None, max_workers=4) -> pd.DataFrame:# La p
 
     df = stop_words_execution(df)#, filtros, max_workers)
 
-    # Esto no va a correr ni en remil pedo
-    # file_path = finale(df, path_utils)#warning: se va a sobrecargar de archivos la carpeta de cofiguracion
+    # CAMBIAR ESTRUCTURA A List[pd.DataFrame]
+    wordcloud_storage = final_output(df, path_utils)
 
     
     # hacer algo con result
@@ -237,7 +245,8 @@ def new_finale(df): #TENER SIEMPRE PRESENTE QUE SE VA A ACTUALIZAR A List[pd.Dat
     """
     Esta funcion ejecuta la libreria wordcloud
     
-    devuelve la o las figure, y agregaciones implicitas en el dataset
+    devuelve el objeto tipo WordCloud propio de la libreria wordcloud
+    
     
     para que eso ocurra, se debe incorporar la logica de output_analytics.py
     
