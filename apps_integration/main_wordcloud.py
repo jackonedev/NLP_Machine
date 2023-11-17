@@ -65,14 +65,15 @@ def main_df_V2(dataframe):
     nombre = dataframe.name
     nombre, archivo = procesar_file_csv(nombre)
     
-    ## ARCHIVO TOKENIZADO
+    ## TOKENIZADOR
     df = tokenizador_i.main_df_V2(dataframe)
     df.name = nombre
 
-    figures = WordCloud_V2.main_df(df)
-    # return dftk
-    # return figures
-    return figures   
+    # WORDCLOUD
+    filtros = []
+    result_list = WordCloud_V2.main_df(df, filtros)
+    
+    return result_list
 
 
 
@@ -124,4 +125,5 @@ if __name__ == "__main__":
     df.name = nombre
     
     res = main_df_V2(df)
-    df
+    
+    print("Done!")
