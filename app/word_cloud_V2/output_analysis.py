@@ -1,6 +1,8 @@
 ## Librerias Nativas de Python y de Terceros
 import copy
-import sys, os, time, ast
+import sys
+import os
+import ast
 from pathlib import Path
 from wordcloud import WordCloud
 import numpy as np
@@ -25,13 +27,7 @@ except:
     from main import limpieza_txt
     from schemas.config_mascara import WordCloudConfig
 
-## Librerías propias
-from tools.feed import procesar_file_csv, procesar_file_png
 
-"""
-
-"""
-  
 def load_resources():
     global remover_palabra, filtrado_palabras
     global content_wc, token_wc
@@ -246,139 +242,32 @@ def apply_filters(batch: list, filter_1, filter_2) -> list:
         
         return batch
 
-def main_df(dataframes:List[pd.DataFrame]=None) -> List[plt.figure]:
-    from app.main.main import wordcloud
-    
-    load_resources()
-
-    if dataframes is None:
-        df_1 = pd.DataFrame({"content_wc":content_wc, "token_wc":token_wc})
-        df_2 = pd.DataFrame({"content_wc":content_wc_II, "token_wc":token_wc_II})
-        df_3 = pd.DataFrame({"content_wc":content_wc_III, "token_wc":token_wc_III})
-
-        #HARDCODED
-        df_1.name = "octubre-untitled"
-        df_2.name = "octubre-untitled_filtered"
-        df_3.name = "tw-cholula-sofia_positive"
-
-        dataframes = [df_1, df_2, df_3]
-
-    # Presets    
-    nombres = []
-    for d in dataframes:#TODO: list comprehension
-        nombres.append(d.name)
-        
-    wc_params_storage = load_configuration_file(path_config, nombres)
-    
-    # Batch Creation: batch = [[batch_content, batch_token], ...]
-    batch = []
-    for i in range(len(nombres)):
-        content = dataframes[i].content_wc.to_list()
-        token = dataframes[i].token_wc.to_list()
-        batch.append([content, token])
-    
-    
-    # Filtrado: on/off depends on dataframes name
-    filtros = load_filters(path_config)
-    for i in range(len(nombres)):
-        if nombres[i].split("_")[1] == "filtered":
-            print(nombres[i])#TODO: Borrar
-            batch[i][0] = apply_filters(batch[i][0], *filtros)
-            batch[i][1] = apply_filters(batch[i][1], *filtros)
-            
-
-# Ejecución
-main_df()
-
-def TODO():
-   
-    """
-    Respecto al nombre del DataFrame:
-        - si el archivo de apertura se llama, nombre-arhivo.extension
-        - 'nombre-archivo' siempre será el comienzo
-        - 'nombre-archivo_{filtered:optional}': el elemento split('_')[1] define la activación del filtro
-        - 'nombre-archivo_{}_{sentiment:optional}': el elemento split('_')[-1] define si se aplican valores por default al df
-    """
-    ### LIMPIEZA ITERATIVA DEL BATCH  ###
-    # usuario, ingresar si desea aplicar filtro de palabras
-    # user_input = input("¿Aplicar filtro de palabras? [n/Y]: n\n")
-    
-    
-    ####################################################################################
-
-    ###  IDENTIFICACION DEL ULTIMO WORDCLOUD CREADO  ###
-    # sistema, verificar la existencia de archivos de salida previos
-    output_files = os.listdir(output_dir)
-    output_files = [file for file in output_files if file.endswith(".png")]
-    if len(output_files) == 0:
-        N = 1
-    else:
-        N = [elemento.split("_")[-1] for elemento in output_files]
-        N = [elemento.split(".")[0] for elemento in N]
-        N = [int(elemento) for elemento in N if elemento.isdigit()]
-        N = max(N) + 1
-
-    output_name = f"wordcloud_{nombre}_{N}"  
-    output_name = os.path.join(output_dir, output_name)
-
-
-
-    ###  MODULO DE WORDCLOUD  ###
-    if "colormap" in wc_params.keys() and wc_params["colormap"] != "":
-        wc_params.pop("color_func")
-    else:
-        color_tuple = wc_params["color_func"]
-        color_func = lambda *args, **kwargs: color_tuple
-        wc_params.pop("color_func")
-
-    # 1ra visualizacion: token
-    if token:
-        with open(os.path.join(output_dir,'unique_batch_token.txt'), 'w', encoding="UTF-8") as f:
-            f.write("\n".join(list(set(batch_token))))
-
-        word_cloud = " ".join(batch_token)
-
-        
-        wordcloud = WordCloud(
-            mask=mascara_wordcloud,
-            collocations=False,
-            contour_width=1.0,
-            **wc_params)
-        if not "colormap" in wc_params.keys():
-            wordcloud.color_func=color_func
-            wordcloud.contour_color = color_tuple
+def update_wc_colormap(wc_params_storage, nombres):
+    global color_tuple, color_func
+    """Funcion alternativa "colormap":
+    pinta las palabras de distinto color en funcion del tamaño
+    para ello debe eliminarse el parámetro por default "color_func"."""
+    for name in nombres:
+        wc_params = wc_params_storage[name]
+        if "colormap" in wc_params.keys() and wc_params["colormap"] != "":
+            wc_params.pop("color_func")
         else:
-            wordcloud.contour_color = (0, 0, 0)
+            color_tuple = wc_params["color_func"]
+            color_func = lambda *args, **kwargs: color_tuple
+            wc_params.pop("color_func")
         
-        
-        wordcloud.generate(word_cloud)
-        wordcloud.to_file(f"{output_name}_token.png")
+        wc_params_storage[name] |= wc_params
 
+    return wc_params_storage
 
-    # 2da visualizacion: content
-    print(f"\nWordCloud Nº {N} de {nombre}\n")
-
-    plt.figure(figsize=(20,8))
-
+def wordcloud_content(subbatch, wc_params):
     word_cloud = ""
-    for row in batch_content:
+    for row in subbatch:
         row += " "
         word_cloud+= row
 
-
-
-    # descargar en txt un listado de tokens únicos (no considera cantidad)
-    with open(os.path.join(output_dir,'unique_batch_content.txt'), 'w', encoding="UTF-8") as f:
-        f.write("\n".join(list(set(word_cloud.split(" ")))))
-
-
-    # fecha: 23/10
-    ###TODO: HARDCODED | contour_width: float (default=0) | contour_color: color value (default=”black”)
-    ###TODO: HARDCODED | contour_width: float (default=0) | contour_color: color value (default=”black”)
-
     ## Se cambia el mode de RGBA a RGB y se cambia el background color
     # se añaden las lineas de contorno y color del contorno
-
     wordcloud = WordCloud(
         mask=mascara_wordcloud,
         collocations=False,
@@ -391,29 +280,92 @@ def TODO():
         wordcloud.contour_color = color_tuple
     else:
         wordcloud.contour_color = (0, 0, 0)
-
     
-    wordcloud.generate(word_cloud)
-    wordcloud.to_file(f"{output_name}.png")
-        
+    return wordcloud.generate(word_cloud)
 
-    # descargar txt con wc_params
-    try:
-        wc_params["color_func"] = color_tuple
+def wordcloud_token(subbatch, wc_params):
+
+    word_cloud = " ".join(subbatch)
+    
+    wordcloud = WordCloud(
+        mask=mascara_wordcloud,
+        collocations=False,
+        contour_width=1.0,
+        **wc_params)
+    if not "colormap" in wc_params.keys():
+        wordcloud.color_func=color_func
+        wordcloud.contour_color = color_tuple
+    else:
+        wordcloud.contour_color = (0, 0, 0)
+    
+    return wordcloud.generate(word_cloud)
+
+
+def final_output(dataframes:List[pd.DataFrame]=None) -> List[wordcloud.wordcloud.WordCloud]:
+    # from app.main.main import wordcloud
+    """
+    TODO: DOCS
+    Respecto al nombre de cada DataFrame:
+        - si el archivo de apertura se llama, nombre-arhivo_valores_adicionales.extension
+        - 'nombre-archivo' siempre será el comienzo
+        - 'nombre-archivo_{filtered:optional}': el elemento split('_')[1] define la activación del filtro
+        - 'nombre-archivo_{}_{sentiment:optional}': el elemento split('_')[-1] define si se aplican valores por default al df
+    """
+    
+    load_resources()
+
+    #HARDCODED DATA
+    if dataframes is None:
+        df_1 = pd.DataFrame({"content_wc":content_wc, "token_wc":token_wc})
+        df_2 = pd.DataFrame({"content_wc":content_wc_II, "token_wc":token_wc_II})
+        df_3 = pd.DataFrame({"content_wc":content_wc_III, "token_wc":token_wc_III})
+
+        df_1.name = "octubre-untitled"
+        df_2.name = "octubre-untitled_filtered"
+        df_3.name = "tw-cholula-sofia_positive"
+
+        dataframes = [df_1, df_2, df_3]
+
+    # Presets    
+    nombres = [d.name for d in dataframes]
+    wc_params_storage = load_configuration_file(path_config, nombres)
+    
+    # Batch Creation: batch = [[batch_content, batch_token], ...]
+    batch = []
+    for i in range(len(nombres)):
+        content = dataframes[i].content_wc.to_list()
+        token = dataframes[i].token_wc.to_list()
+        batch.append([content, token])
+    
+    # Filtrado: on/off depends on the name of dataframes
+    filtros = load_filters(path_config)
+    for i in range(len(nombres)):
+        if nombres[i].split("_")[1] == "filtered":
+            print("activando filtros para: ",nombres[i])#TODO: Borrar
+            batch[i][0] = apply_filters(batch[i][0], *filtros)
+            batch[i][1] = apply_filters(batch[i][1], *filtros)
+            
+    # Wordcloud params update
+    wc_params_storage = update_wc_colormap(wc_params_storage, nombres)
+    # plt.figure(figsize=(20,8))
+
+    # Wordcloud object instanciation
+    #TODO: optimization
+    wordcloud_storage = []
+    for i, name in enumerate(nombres):
+        wc_content = wordcloud_content(batch[i][0], wc_params_storage[name])
+        wc_token = wordcloud_token(batch[i][1], wc_params_storage[name])
+        wordcloud_storage.append([wc_content, wc_token])
+
+    # Wordcloud config backup
+    try:# recomposition of the original configuration
+        wc_params_storage[nombres[0]]["color_func"] = color_tuple
     except:
         pass
+
+    output_name = nombres[0].split("_")[0]
+    with open(os.path.join(path_config,"mascaras_png", f"{output_name}.txt"), 'w', encoding="UTF-8") as f:
+        f.write(str(wc_params_storage[nombres[0]]))
         
-    with open(os.path.join(output_dir, f"{output_name}.txt"), 'w', encoding="UTF-8") as f:
-        f.write(str(wc_params))
-
-    
-    print("programa finalizado exitosamente.")
-    print(f"Archivo guardado: {output_name}.png")
-        
-
-
-
-
-
-
-
+    print(f"{__name__} ended succesfully!")
+    return wordcloud_storage
