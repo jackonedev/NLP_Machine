@@ -11,6 +11,7 @@ models/
 app/word_cloud_utils/ejemplos
 csvs-junks/
 *.xlsx
+*.pkl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
