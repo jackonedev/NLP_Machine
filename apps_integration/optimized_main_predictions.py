@@ -6,7 +6,6 @@ sys.path.insert(0, project_root)
 
 import pickle
 import pandas as pd
-from functools import partial
 import multiprocessing as mp
 
 
@@ -16,50 +15,6 @@ from app.m1_sentiment import M1_sentiment, M1_sentiment_ii, M1_sentiment_iii
 from app.m2_emotions import M2_emotions
 from app.m3_emotions import M3_emotions
 
-
-    
-
-# results = []
-# def run_func(func, args):
-#     global results
-#     # assert isinstance(args[0], type(pd.DataFrame()))
-#     results.append(func(args[0]))
-
-
-# def main_transformers(df:pd.DataFrame):
-#     nombre = df.name
-#     parallel_funcs = [main_df_M2, main_df_M3]
-    
-#     def run_processes(funcs: list, dataframe):
-#         global results
-#         "Multiprocesos, paralelismo: Ejecuta multiples funciones, con el mismo argumento"
-#         # assert isinstance(dataframe, type(pd.DataFrame()))
-        
-#         if len(funcs) > 4:
-#             print("La función asignará un proceso por cada función")
-#             print("simultáneamente, sin lista de espera.")
-#             print("Error de developer. Límite máximo de funciones es 4.")
-#             raise SystemError
-
-#         operations = []
-#         for func in funcs:
-#             process = mp.Process(target=run_func, args=(func, (dataframe,)))
-#             process.start()
-#             operations.append(process)
-#         for op in operations:
-#             op.join()
-#         # results = pd.concat(results, axis=1)
-#         return results
-
-#     result = run_processes(parallel_funcs, df)
-#     # result.name = nombre
-#     with open(f"_{__name__}_results.pkl", "wb") as f:
-#         pickle.dump(result, f)
-#     return result
-
-
-
-import multiprocessing as mp
 
 def run_func(func, args, results):
     results.append(func(args[0]))
@@ -88,8 +43,6 @@ def main_transformers(df:pd.DataFrame):
             for op in operations:
                 op.join()
             
-
-            # Convertir los resultados a una lista normal antes de devolverlos
             return list(results)
 
     result = run_processes(parallel_funcs, df)
